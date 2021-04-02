@@ -42,6 +42,19 @@ CORS_ORIGIN_WHITELIST = (
 
 )
 
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'Token',
+]
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
@@ -61,6 +74,8 @@ INSTALLED_APPS = [
     'users',
     "rest_framework.authtoken",
     'corsheaders',
+    'company',
+    'account',
 
 
 

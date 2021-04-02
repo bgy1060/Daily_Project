@@ -16,10 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework import routers
-from users.views import AuthViewSet
+from users.views import *
 
 
 router = routers.DefaultRouter(trailing_slash=False)
 router.register('api/auth', AuthViewSet, basename='auth')
+router.register('api/register', RegisterViewSet, basename='register')
 
 urlpatterns = router.urls
