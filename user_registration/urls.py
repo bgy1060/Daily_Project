@@ -17,10 +17,11 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework import routers
 from users.views import *
-
+from daily_funding.views import *
 
 router = routers.DefaultRouter(trailing_slash=False)
 router.register('api/auth', AuthViewSet, basename='auth')
 router.register('api/register', RegisterViewSet, basename='register')
+router.register('api/company', DailyViewSet, basename='daily_funding')
 
 urlpatterns = router.urls

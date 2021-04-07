@@ -3,7 +3,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.models import BaseUserManager
 
-from users.models import CustomUser
+from users.models import CustomUser, Register
+from company.models import Company
 
 User = get_user_model()
 
@@ -79,5 +80,22 @@ class WithdrawalSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=300, required=True)
 
 
+class CompanyRegisterSerializer(serializers.ModelSerializer):
+    company_name = serializers.SerializerMethodField()
 
+    class Meta:
+        model = Register
+        fields = (
+            'uid',
+            'company_name'
+        )
+
+    def get_company_name(self, obj: Register):
+        return obj.company_id.company_name
+
+
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = ('id','company_name')
 

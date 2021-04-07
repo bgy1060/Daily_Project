@@ -1,6 +1,7 @@
 # Create your views here.
 from django.contrib.auth import get_user_model, logout
 from django.core.exceptions import ImproperlyConfigured
+from django.http import JsonResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -9,9 +10,9 @@ from django.views.decorators.csrf import csrf_exempt
 
 from company.models import Company
 from . import serializers
+from .serializers import CompanyRegisterSerializer,CompanySerializer
 from .utils import get_and_authenticate_user, create_user_account
 from django.utils import timezone
-import bcrypt
 
 import base64
 from Crypto import Random
@@ -113,7 +114,6 @@ class AESCipher:
         return unpad(cipher.decrypt(enc[16:]))
 
 
-
 class RegisterViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny, ]
     serializer_class = serializers.EmptySerializer
@@ -122,23 +122,58 @@ class RegisterViewSet(viewsets.GenericViewSet):
     }
 
     @csrf_exempt
+    @action(methods=['GET', ], detail=False)
+    def company(self,request):
+        query_set = Company.objects.all()
+        serializer = CompanySerializer(query_set, many=True)
+        return JsonResponse(serializer.data, safe=False)
+        return Response(status=status.HTTP_200_OK)
+
+
+    @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def company_register(self, request):
         data = request.data
-        company_id = Company.objects.get(company_name=data['company_name'])
-
-        user_password = data['user_password']
-
-        encrypted_user_password = AESCipher(bytes(my_settings.key)).encrypt(user_password)
-
-        decrypted_data = AESCipher(bytes(my_settings.key)).decrypt(encrypted_user_password)
-        print(decrypted_data.decode('utf-8'))
-
+        print(data)
         try:
-            request.user.register_set.create(username=data['username'], user_password=encrypted_user_password,
-                                             company_id=company_id, uid=request.user.id)
-            message = {"Information registration completed!"}
+            company_id = data['company_id']
+
+            username = data['username']
+            user_password = data['user_password']
+
+            encrypted_username = AESCipher(bytes(my_settings.key)).encrypt(username)
+            encrypted_user_password = AESCipher(bytes(my_settings.key)).encrypt(user_password)
+
+            print(len(encrypted_username))
+            print(encrypted_username)
+
+            '''
+            #------  decryption test  -------
+
+            decrypted_data = AESCipher(bytes(my_settings.key)).decrypt(encrypted_user_password)
+            print(decrypted_data.decode('utf-8'))
+            decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(encrypted_username)
+            print(decrypted_username.decode('utf-8'))
+            '''
+
+            try:
+                request.user.register_set.create(username=encrypted_username.decode('utf-8'), user_password=encrypted_user_password.decode('utf-8'),
+                                                 company_id=company_id, uid=request.user.id)
+                message = {"Information registration completed!"}
+            except:
+                message = {"This site has already been registered!"}
+
         except:
-            message = {"This site has already been registered!"}
+            message = {"Please enter your company name correctly"}
 
         return Response(data=message, status=status.HTTP_201_CREATED)
+
+
+    @csrf_exempt
+    @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def registered_company(self, request):
+        query_set = request.user.register_set.all()
+        print(query_set)
+        serializer = CompanyRegisterSerializer(query_set, many=True)
+        return JsonResponse(serializer.data, safe=False)
+        return Response(status=status.HTTP_200_OK)

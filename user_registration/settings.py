@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'company',
     'account',
+    'daily_funding',
 
 
 

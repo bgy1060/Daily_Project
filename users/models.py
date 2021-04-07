@@ -31,11 +31,12 @@ class Register(models.Model):
     id = models.AutoField(primary_key=True)
     uid = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     company_id = models.ForeignKey(Company, on_delete=models.CASCADE)
-    username = models.CharField(max_length=45, blank=False, null=False)
+    username = models.CharField(max_length=500, blank=False, null=False)
     user_password = models.CharField(max_length=500, blank=False, null=False)
 
     class Meta:
         db_table = 'register'
+        unique_together = ['company_id', 'uid']
 
 
 class Investing_Status(models.Model):
@@ -60,12 +61,12 @@ class Summary_Investing(models.Model):
     company_id = models.ForeignKey(Company, on_delete=models.CASCADE)
     investing_product = models.CharField(max_length=45)
     investing_price = models.PositiveIntegerField()
-    investing_time = models.DateTimeField(default='')
     status = models.ForeignKey(Investing_Status, on_delete=models.CASCADE)
     investing_type = models.ForeignKey(Investing_Type, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'summary_investing'
+        unique_together = ['company_id', 'investing_product', 'investing_price']
 
 
 class Investing_Balance(models.Model):
@@ -78,5 +79,6 @@ class Investing_Balance(models.Model):
 
     class Meta:
         db_table = 'investing_balance'
+        unique_together = ['company_id', 'uid']
 
 
