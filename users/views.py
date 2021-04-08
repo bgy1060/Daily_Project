@@ -136,7 +136,7 @@ class RegisterViewSet(viewsets.GenericViewSet):
         data = request.data
         print(data)
         try:
-            company_id = data['company_id']
+            company_id = Company.objects.get(id=int(data['company_id']))
 
             username = data['username']
             user_password = data['user_password']
