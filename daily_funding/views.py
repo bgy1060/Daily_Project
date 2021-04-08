@@ -17,6 +17,8 @@ from Crypto.Cipher import AES
 import my_settings
 from . import serializers
 from .serializers import CompanyAccountSerializer, CompanyBalanceSerializer, CompanyWithdrawalSerializer, InvestingiSerializer
+from requests.cookies import create_cookie
+from daily_funding.models import Cookie
 
 User = get_user_model()
 
@@ -58,30 +60,44 @@ class DailyViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def account(self, request):
-        company_id = request.data['company_id']
-
-        username = request.user.register_set.get(company_id=company_id).username.strip()
-        password = request.user.register_set.get(company_id=company_id).user_password.strip()
-
-        decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
-        decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
-
-        USER = decrypted_username
-        PASS = decrypted_password
-
-        login_info = {
-            "action": "is_login_check",
-            "return_url": "https://www.daily-funding.com/",
-            "mb_id": USER,  # 아이디 지정
-            "mb_password": PASS  # 비밀번호 지정
-        }
-
+        company_id = Company.objects.get(id=int(request.data['company_id']))
         # 세션 시작하기
         session = requests.session()
 
-        url_login = "https://www.daily-funding.com/bbs/login_check.php"
-        res = session.post(url_login, data=login_info)
-        res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+        try:
+            cookie_value = Cookie.objects.get(uid=request.user.id, company_id=company_id).cookie_value
+            cookie = create_cookie('PHPSESSID', cookie_value, domain='.www.daily-funding.com')
+            session.cookies.set_cookie(cookie)
+            print("Here!")
+
+        except:
+            username = request.user.register_set.get(company_id=company_id).username.strip()
+            password = request.user.register_set.get(company_id=company_id).user_password.strip()
+
+            decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
+
+            USER = decrypted_username
+            PASS = decrypted_password
+
+            login_info = {
+                "url": "https://www.daily-funding.com:443",
+                "mb_id": USER,  # 아이디 지정
+                "mb_password": PASS  # 비밀번호 지정
+            }
+
+            url_login = "https://www.daily-funding.com/bbs/login_check.php"
+            res = session.post(url_login, data=login_info)
+            res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+            cookie = session.cookies
+            print(cookie.get('PHPSESSID'))
+
+            try:
+                request.user.cookie_set.create(cookie_value=cookie.get('PHPSESSID'), company_id=company_id, uid=request.user.id)
+            except:
+                request.user.cookie_set.update(cookie_value=cookie.get('PHPSESSID'))
+
 
         # 마이페이지에 접근하기
         url_mypage = "https://www.daily-funding.com/mypage/my_info.php"
@@ -95,7 +111,7 @@ class DailyViewSet(viewsets.GenericViewSet):
         bank = data[1].text
         account_number = data[2].text
         deposit = int(soup.select_one("ul.info_com span.s_tit em").text.replace('원', '').replace(',', ''))
-        print(deposit)
+
 
         try:
             request.user.account_set.create(bank=bank, account_holder=account_holder, account_number=account_number,
@@ -113,30 +129,48 @@ class DailyViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def balance(self, request):
-        company_id = request.data['company_id']
-
-        username = request.user.register_set.get(company_id=company_id).username.strip()
-        password = request.user.register_set.get(company_id=company_id).user_password.strip()
-
-        decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
-        decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
-
-        USER = decrypted_username
-        PASS = decrypted_password
-
-        login_info = {
-            "action": "is_login_check",
-            "return_url": "https://www.daily-funding.com/",
-            "mb_id": USER,  # 아이디 지정
-            "mb_password": PASS  # 비밀번호 지정
-        }
+        company_id = Company.objects.get(id=int(request.data['company_id']))
 
         # 세션 시작하기
         session = requests.session()
 
-        url_login = "https://www.daily-funding.com/bbs/login_check.php"
-        res = session.post(url_login, data=login_info)
-        res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+        try:
+            cookie_value = Cookie.objects.get(uid=request.user.id, company_id=company_id).cookie_value
+            cookie = create_cookie('PHPSESSID', cookie_value, domain='.www.daily-funding.com')
+            session.cookies.set_cookie(cookie)
+            print("Here!")
+
+        except:
+
+            username = request.user.register_set.get(company_id=company_id).username.strip()
+            password = request.user.register_set.get(company_id=company_id).user_password.strip()
+
+            decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
+
+            USER = decrypted_username
+            PASS = decrypted_password
+
+            login_info = {
+                "action": "is_login_check",
+                "return_url": "https://www.daily-funding.com/",
+                "mb_id": USER,  # 아이디 지정
+                "mb_password": PASS  # 비밀번호 지정
+            }
+
+            url_login = "https://www.daily-funding.com/bbs/login_check.php"
+            res = session.post(url_login, data=login_info)
+            res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+            cookie = session.cookies
+            print(cookie.get('PHPSESSID'))
+
+            try:
+                request.user.cookie_set.create(cookie_value=cookie.get('PHPSESSID'), company_id=company_id,
+                                               uid=request.user.id)
+            except:
+                request.user.cookie_set.update(cookie_value=cookie.get('PHPSESSID'))
+
 
         # 마이페이지에 접근하기
         url_mypage = "https://www.daily-funding.com/mypage/my_info.php"
@@ -164,33 +198,51 @@ class DailyViewSet(viewsets.GenericViewSet):
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_201_CREATED)
 
+
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def withdrawal(self, request):
-        company_id = request.data['company_id']
-
-        username = request.user.register_set.get(company_id=company_id).username.strip()
-        password = request.user.register_set.get(company_id=company_id).user_password.strip()
-
-        decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
-        decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
-
-        USER = decrypted_username
-        PASS = decrypted_password
-
-        login_info = {
-            "action": "is_login_check",
-            "return_url": "https://www.daily-funding.com/",
-            "mb_id": USER,  # 아이디 지정
-            "mb_password": PASS  # 비밀번호 지정
-        }
+        company_id = Company.objects.get(id=int(request.data['company_id']))
 
         # 세션 시작하기
         session = requests.session()
 
-        url_login = "https://www.daily-funding.com/bbs/login_check.php"
-        res = session.post(url_login, data=login_info)
-        res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+        try:
+            cookie_value = Cookie.objects.get(uid=request.user.id, company_id=company_id).cookie_value
+            cookie = create_cookie('PHPSESSID', cookie_value, domain='.www.daily-funding.com')
+            session.cookies.set_cookie(cookie)
+            print("Here!")
+
+        except:
+
+            username = request.user.register_set.get(company_id=company_id).username.strip()
+            password = request.user.register_set.get(company_id=company_id).user_password.strip()
+
+            decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
+
+            USER = decrypted_username
+            PASS = decrypted_password
+
+            login_info = {
+                "action": "is_login_check",
+                "return_url": "https://www.daily-funding.com/",
+                "mb_id": USER,  # 아이디 지정
+                "mb_password": PASS  # 비밀번호 지정
+            }
+
+            url_login = "https://www.daily-funding.com/bbs/login_check.php"
+            res = session.post(url_login, data=login_info)
+            res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+            cookie = session.cookies
+            print(cookie.get('PHPSESSID'))
+
+            try:
+                request.user.cookie_set.create(cookie_value=cookie.get('PHPSESSID'), company_id=company_id,
+                                               uid=request.user.id)
+            except:
+                request.user.cookie_set.update(cookie_value=cookie.get('PHPSESSID'))
 
         # 마이페이지에 접근하기
         url_mypage = "https://www.daily-funding.com/mypage/my_withdraw2.php"
@@ -225,30 +277,47 @@ class DailyViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def investing(self, request):
-        company_id = request.data['company_id']
-
-        username = request.user.register_set.get(company_id=company_id).username.strip()
-        password = request.user.register_set.get(company_id=company_id).user_password.strip()
-
-        decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
-        decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
-
-        USER = decrypted_username
-        PASS = decrypted_password
-
-        login_info = {
-            "action": "is_login_check",
-            "return_url": "https://www.daily-funding.com/",
-            "mb_id": USER,  # 아이디 지정
-            "mb_password": PASS  # 비밀번호 지정
-        }
+        company_id = Company.objects.get(id=int(request.data['company_id']))
 
         # 세션 시작하기
         session = requests.session()
 
-        url_login = "https://www.daily-funding.com/bbs/login_check.php"
-        res = session.post(url_login, data=login_info)
-        res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+        try:
+            cookie_value = Cookie.objects.get(uid=request.user.id, company_id=company_id).cookie_value
+            cookie = create_cookie('PHPSESSID', cookie_value, domain='.www.daily-funding.com')
+            session.cookies.set_cookie(cookie)
+            print("Here!")
+
+        except:
+
+            username = request.user.register_set.get(company_id=company_id).username.strip()
+            password = request.user.register_set.get(company_id=company_id).user_password.strip()
+
+            decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
+
+            USER = decrypted_username
+            PASS = decrypted_password
+
+            login_info = {
+                "action": "is_login_check",
+                "return_url": "https://www.daily-funding.com/",
+                "mb_id": USER,  # 아이디 지정
+                "mb_password": PASS  # 비밀번호 지정
+            }
+
+            url_login = "https://www.daily-funding.com/bbs/login_check.php"
+            res = session.post(url_login, data=login_info)
+            res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+            cookie = session.cookies
+            print(cookie.get('PHPSESSID'))
+
+            try:
+                request.user.cookie_set.create(cookie_value=cookie.get('PHPSESSID'), company_id=company_id,
+                                               uid=request.user.id)
+            except:
+                request.user.cookie_set.update(cookie_value=cookie.get('PHPSESSID'))
 
         # 마이페이지에 접근하기
         url_mypage = "https://www.daily-funding.com/mypage/investitems.php"
