@@ -23,13 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'b=*ljen7@r=*odtnf-#b7*udsa*%2eg50d3+05ca4i3dls^0%$'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
 ALLOWED_HOSTS = ['*']
 
 DATABASES = my_settings.DATABASE
 
+DEBUG = True
 
 # Application definition
 
@@ -77,6 +75,7 @@ INSTALLED_APPS = [
     'company',
     'account',
     'daily_funding',
+    'notice_board',
 
 
 
@@ -161,7 +160,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

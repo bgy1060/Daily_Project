@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from company.models import Company
 from . import serializers
-from .serializers import CompanyRegisterSerializer,CompanySerializer
+from .serializers import CompanyRegisterSerializer,CompanySerializer,UserInfoSerializer
 from .utils import get_and_authenticate_user, create_user_account
 from django.utils import timezone
 
@@ -82,6 +82,15 @@ class AuthViewSet(viewsets.GenericViewSet):
 
         data = {"Membership withdrawal success"}
         return Response(data=data, status=status.HTTP_200_OK)
+
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False)
+    def user_info(self, request):
+        query_set = User.objects.all()
+        print(query_set)
+        serializer = UserInfoSerializer(query_set, many=True)
+        return JsonResponse(serializer.data, safe=False)
+        return Response(status=status.HTTP_200_OK)
 
     def get_serializer_class(self):
         if not isinstance(self.serializer_classes, dict):

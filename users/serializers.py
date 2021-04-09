@@ -99,3 +99,9 @@ class CompanySerializer(serializers.ModelSerializer):
         model = Company
         fields = ('id','company_name')
 
+
+class UserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id','email')
+
