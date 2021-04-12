@@ -5,6 +5,14 @@ from company.models import *
 
 # Create your models here.
 
+class Category(models.Model):
+    category_id = models.AutoField(primary_key=True)
+    category_name = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = 'category'
+
+
 class NoticeBoard(models.Model):
     post_id = models.AutoField(primary_key=True)
     uid = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -14,6 +22,7 @@ class NoticeBoard(models.Model):
     views = models.IntegerField(default=0)
     like = models.IntegerField(default=0)
     dislike = models.IntegerField(default=0)
+    category_id = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
 
     class Meta:
         db_table = 'notice_board'

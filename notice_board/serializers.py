@@ -19,7 +19,7 @@ class PostListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NoticeBoard
-        fields = ('post_id','user','title', 'date', 'views', 'like', 'dislike')
+        fields = ('post_id','user','title', 'date', 'views', 'like', 'dislike', 'category_id')
 
     def get_user(self,obj: User):
         return obj.uid.email
@@ -30,7 +30,7 @@ class DetailPostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NoticeBoard
-        fields = ('post_id', 'user', 'title', 'content', 'date', 'views', 'like', 'dislike')
+        fields = ('post_id', 'user', 'title', 'content', 'date', 'views', 'like', 'dislike', 'category_id')
 
     def get_user(self, obj: User):
         return obj.uid.email
@@ -45,3 +45,9 @@ class CommentListSerializer(serializers.ModelSerializer):
 
     def get_user(self, obj: User):
         return obj.uid.email
+
+
+class CategoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('category_id', 'category_name')

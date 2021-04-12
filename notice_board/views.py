@@ -7,13 +7,11 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from . import serializers
 from .models import *
-from .serializers import PostListSerializer, DetailPostSerializer, CommentListSerializer
+from .serializers import PostListSerializer, DetailPostSerializer, CommentListSerializer, CategoryListSerializer
 from django.utils import timezone
+from rest_framework.pagination import PageNumberPagination
 
 User = get_user_model()
-
-
-# Create your views here.
 
 
 class NoticeBoardViewSet(viewsets.GenericViewSet):
@@ -29,7 +27,7 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         data = request.data
         print(data)
         request.user.noticeboard_set.create(title=data['title'], content=data['content'], date=timezone.now(),
-                                            uid=request.user.id)
+                                            category_id=request.data['category_id'], uid=request.user.id)
         return Response(status=status.HTTP_200_OK)
 
     @csrf_exempt
@@ -78,10 +76,31 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
 
     @csrf_exempt
     @action(methods=['GET', ], detail=False)
-    def post_list(self, request):
-        query_set = NoticeBoard.objects.all()
-        serializer = PostListSerializer(query_set, many=True)
+    def category_list(self, request):
+        query_set = Category.objects.all()
+        serializer = CategoryListSerializer(query_set, many=True)
         return JsonResponse(serializer.data, safe=False)
+        return Response(status=status.HTTP_200_OK)
+
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False)
+    def post_list(self, request):
+        try:
+            paginator = PageNumberPagination()
+            paginator.page_size = request.data['page_size']
+            category_id = request.data['category_id']
+            query_set = NoticeBoard.objects.filter(category_id=category_id).order_by('-post_id')
+            result_page = paginator.paginate_queryset(query_set, request)
+            serializer = PostListSerializer(result_page, many=True)
+
+        except:
+            paginator = PageNumberPagination()
+            paginator.page_size = request.data['page_size']
+            query_set = NoticeBoard.objects.all().order_by('-post_id')
+            result_page = paginator.paginate_queryset(query_set, request)
+            serializer = PostListSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
         return Response(status=status.HTTP_200_OK)
 
     @csrf_exempt

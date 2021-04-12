@@ -106,8 +106,11 @@ class DailyViewSet(viewsets.GenericViewSet):
 
         soup = BeautifulSoup(res.text, "html.parser")
         data = soup.select('li.bank_num_info em')
+        try:
+            account_holder = data[0].text
 
-        account_holder = data[0].text
+        except:
+            pass
         bank = data[1].text
         account_number = data[2].text
         deposit = int(soup.select_one("ul.info_com span.s_tit em").text.replace('원', '').replace(',', ''))
