@@ -19,6 +19,7 @@ from . import serializers
 from .serializers import CompanyAccountSerializer, CompanyBalanceSerializer, CompanyWithdrawalSerializer, InvestingiSerializer
 from requests.cookies import create_cookie
 from daily_funding.models import Cookie
+from users.serializers import EmptySerializer
 
 User = get_user_model()
 
@@ -52,7 +53,7 @@ class AESCipher:
 
 class DailyViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny, ]
-    serializer_class = serializers.EmptySerializer
+    serializer_class = EmptySerializer
     serializer_classes = {
 
     }
@@ -60,6 +61,7 @@ class DailyViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def account(self, request):
+        """ USER 계좌 정보 가져오기 """
         company_id = Company.objects.get(id=int(request.data['company_id']))
         # 세션 시작하기
         session = requests.session()
@@ -132,6 +134,7 @@ class DailyViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def balance(self, request):
+        """ USER 투자 요약 정보 가져오기 """
         company_id = Company.objects.get(id=int(request.data['company_id']))
 
         # 세션 시작하기
@@ -205,6 +208,7 @@ class DailyViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def withdrawal(self, request):
+        """ USER 거래 내역 가져오기"""
         company_id = Company.objects.get(id=int(request.data['company_id']))
 
         # 세션 시작하기
@@ -280,6 +284,7 @@ class DailyViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def investing(self, request):
+        """ USER 투자 내역 가져오기 """
         company_id = Company.objects.get(id=int(request.data['company_id']))
 
         # 세션 시작하기

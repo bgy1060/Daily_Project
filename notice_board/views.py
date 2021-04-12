@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -8,31 +9,50 @@ from django.views.decorators.csrf import csrf_exempt
 from . import serializers
 from .models import *
 from .serializers import PostListSerializer, DetailPostSerializer, CommentListSerializer, CategoryListSerializer, FAQListSerializer
+from users.serializers import EmptySerializer
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
+from drf_yasg import openapi
 
 User = get_user_model()
 
 
 class NoticeBoardViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny, ]
-    serializer_class = serializers.EmptySerializer
+    serializer_class = EmptySerializer
     serializer_classes = {
 
     }
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'title': openapi.Schema(type=openapi.TYPE_STRING, description='글 제목'),
+            'content': openapi.Schema(type=openapi.TYPE_STRING, description='글 내용'),
+            'category_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='카테고리 아이디'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def write_post(self, request):
+        """ 새로운 글 쓰기 : title, content, category_id 입력 [token required] """
         data = request.data
         print(data)
+        category_id = Category.objects.get(category_id=int(request.data['category_id']))
         request.user.noticeboard_set.create(title=data['title'], content=data['content'], date=timezone.now(),
-                                            category_id=request.data['category_id'], uid=request.user.id)
+                                            category_id=category_id, uid=request.user.id)
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'post_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='수정하고 싶은 글 post_id'),
+            'title': openapi.Schema(type=openapi.TYPE_STRING, description='수정 제목'),
+            'content': openapi.Schema(type=openapi.TYPE_STRING, description='수정 글 내용'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def update_post(self, request):
+        """ 내가 작성한 글 수정 : title, content 수정 가능 [token required]"""
         data = request.data
         post_id = request.data['post_id']
         post = request.user.noticeboard_set.get(post_id=post_id)
@@ -41,35 +61,63 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         post.save()
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'post_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='삭제하고 싶은 글 post_id'),
+
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def delete_post(self, request):
+        """ 내가 작성한 글 삭제 : post_id 필요 [token required]"""
         post_id = request.data['post_id']
         post = request.user.noticeboard_set.get(post_id=post_id)
         post.delete()
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'post_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='세부 내용을 보고싶은 글 post_id'),
+
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def detail_post(self, request):
+        """ 특정 글의 세부 내용 : post_id 필요"""
         post_id = request.data['post_id']
         query_set = NoticeBoard.objects.get(post_id=post_id)
         serializer = DetailPostSerializer(query_set)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'post_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='post_id를 가진 글 조회수 업데이트'),
+
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def update_view(self, request):
+        """ 특정 글의 조회수 업데이트 """
         post_id = request.data['post_id']
         post = NoticeBoard.objects.get(post_id=post_id)
         post.views = post.views + 1
         post.save()
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'post_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='post_id를 가진 글 조회수 조회'),
+
+        }))
     @csrf_exempt
-    @action(methods=['GET', ], detail=False)
+    @action(methods=['POST', ], detail=False)
     def post_view(self, request):
+        """ 특정 글의 조회수 가져오기 : post_id를 가진 글 조회수 가져오기"""
         post_id = request.data['post_id']
         post_view = NoticeBoard.objects.get(post_id=post_id).views
         return Response(data=post_view, status=status.HTTP_200_OK)
@@ -77,14 +125,23 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['GET', ], detail=False)
     def category_list(self, request):
+        """ 카테고리 목룍 가져오기 : 카테고리 리스트는 Admin 에서 관리"""
         query_set = Category.objects.all()
         serializer = CategoryListSerializer(query_set, many=True)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'page_size': openapi.Schema(type=openapi.TYPE_INTEGER, description='한 페이지에 표시할 글 수'),
+            'category_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='특정 카테고리를 가진 post를 보고싶을 경우'),
+
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def post_list(self, request):
+        """ 전체 글 목룍 가져오기 : category_id 필드가 없는 경우, 특정 카테고리의 전체 글 목록 가져오기 : category_id 필드에 특정 카테고리 작성 """
         try:
             paginator = PageNumberPagination()
             paginator.page_size = request.data['page_size']
@@ -103,9 +160,17 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         return paginator.get_paginated_response(serializer.data)
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'post_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='post_id를 가진 글의 댓글 가져오기'),
+            'parent_comment': openapi.Schema(type=openapi.TYPE_INTEGER, description='특정 댓글의 대댓글을 조회할 때 사용'),
+
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def comment_list(self, request):
+        """ 전체 댓글 목록 가져오기 : parent_comment 필드 생략, 특정 댓글의 대댓글 조회 : parent_comment 에 대댓글을 보고 싶은 댓글의 comment_id 입력"""
         post_id = request.data['post_id']
         try:
             parent_comment = request.data['parent_comment']
@@ -117,9 +182,17 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'post_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='post_id를 가진 글에 댓글 작성'),
+            'comment_content': openapi.Schema(type=openapi.TYPE_STRING, description='댓글 내용'),
+            'parent_comment': openapi.Schema(type=openapi.TYPE_INTEGER, description='대댓글을 작성할 경우 상위 댓글의 id 필요'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def write_comment(self, request):
+        """ 댓글 작성하기 [token required]"""
         data = request.data
         post_id = NoticeBoard.objects.get(post_id=int(request.data['post_id']))
         try:
@@ -131,9 +204,16 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
                                             post_id=post_id, uid=request.user.id)
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'comment_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='수정하고 싶은 댓글 ID'),
+            'comment_content': openapi.Schema(type=openapi.TYPE_STRING, description='수정할 댓글 내용'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def update_comment(self, request):
+        """ 댓글 수정하기 [token required] """
         data = request.data
         comment_id = request.data['comment_id']
         comment = request.user.comment_set.get(comment_id=comment_id)
@@ -141,17 +221,30 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         comment.save()
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'comment_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='삭제할 댓글 ID'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def delete_comment(self, request):
+        """ 댓글 삭제하기 [token required]"""
         comment_id = request.data['comment_id']
         comment = request.user.comment_set.get(comment_id=comment_id)
         comment.delete()
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'post_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='좋아요/싫어요 누를 글 ID'),
+            'like_dislike': openapi.Schema(type=openapi.TYPE_INTEGER, description='좋아요를 누르면 1, 싫어요를 누르면 0으로 setting'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def add_post_like(self, request):
+        """ 게시글 좋아요 & 싫어요 누르기 : 좋아요를 누를 경우 like_dislike = 1로, 싫어요를 누를 경우 like_dislike = 0으로 설정 [token required]"""
         try:
             post_id = NoticeBoard.objects.get(post_id=int(request.data['post_id']))
         except:
@@ -185,9 +278,16 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
 
         return Response(data=data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'post_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='좋아요/싫어요 취소할 글 ID'),
+            'like_dislike': openapi.Schema(type=openapi.TYPE_INTEGER, description='좋아요 취소는 1, 싫어요 취소는 0으로 setting'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def cancel_post_like(self, request):
+        """ 게시글 좋아요 & 싫어요 취소하기 : 좋아요 취소는 like_dislike = 1으로, 싫어요 취소는 like_dislike = 0으로 설정 [token required]"""
         like_dislike = request.data['like_dislike']
         if like_dislike == 1:
             post_id = request.data['post_id']
@@ -221,9 +321,16 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
 
         return Response(data=message, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'comment_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='좋아요/싫어요 누를 댓글 ID'),
+            'like_dislike': openapi.Schema(type=openapi.TYPE_INTEGER, description='좋아요를 누르면 1, 싫어요를 누르면 0으로 setting'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def add_comment_like(self, request):
+        """ 댓글 좋아요 & 싫어요 누르기 : 좋아요를 누를 경우 like_dislike = 1로, 싫어요를 누를 경우 like_dislike = 0으로 설정 [token required]"""
         try:
             comment_id = Comment.objects.get(comment_id=int(request.data['comment_id']))
         except:
@@ -257,9 +364,16 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
 
         return Response(data=data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'comment_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='좋아요/싫어요 취소할 댓글 ID'),
+            'like_dislike': openapi.Schema(type=openapi.TYPE_INTEGER, description='좋아요 취소는 1, 싫어요 취소는 0으로 setting'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def cancel_comment_like(self, request):
+        """ 댓글 좋아요 & 싫어요 취소하기 : : 좋아요 취소는 like_dislike = 1으로, 싫어요 취소는 like_dislike = 0으로 설정 [token required]"""
         like_dislike = request.data['like_dislike']
         if like_dislike == 1:
             comment_id = request.data['comment_id']
@@ -293,18 +407,31 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
 
         return Response(data=message, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'faq_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='조회수 업데이트할 FAQ ID'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def update_faq_view(self, request):
+        """ FAQ 조회수 업데이트 """
+        
         faq_id = request.data['faq_id']
         faq = FAQ.objects.get(id=faq_id)
         faq.view = faq.view + 1
         faq.save()
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'page_size': openapi.Schema(type=openapi.TYPE_INTEGER, description='한 페이지에 보여줄 FAQ 수'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def faq_list(self, request):
+        """ FAQ 리스트 출력 """
         paginator = PageNumberPagination()
         paginator.page_size = request.data['page_size']
         query_set = FAQ.objects.all().order_by('order')
@@ -314,9 +441,15 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         return paginator.get_paginated_response(serializer.data)
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'page_size': openapi.Schema(type=openapi.TYPE_INTEGER, description='한 페이지에 보여줄 내가 작성한 글 수'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def my_post(self, request):
+        """  내가 작성한 글 보기 [token required] """
         paginator = PageNumberPagination()
         paginator.page_size = request.data['page_size']
         query_set = NoticeBoard.objects.filter(uid=request.user.id).order_by('-post_id')

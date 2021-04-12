@@ -10,10 +10,6 @@ from .models import *
 User = get_user_model()
 
 
-class EmptySerializer(serializers.Serializer):
-    pass
-
-
 class PostListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
 

@@ -35,6 +35,7 @@ class AuthViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def login(self, request):
+        """ USER 로그인 --- User 로그인 : email과 password를 전송하면 토큰 발행 """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = get_and_authenticate_user(**serializer.validated_data)
@@ -48,6 +49,7 @@ class AuthViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def register(self, request):
+        """ USER 등록 --- 새로운 User 회원가입 : 개인정보 입력 후 가입 가능"""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = create_user_account(**serializer.validated_data)
@@ -57,6 +59,7 @@ class AuthViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def logout(self, request):
+        """ USER 로그아웃 """
         logout(request)
         data = {'success': 'Sucessfully logged out'}
         return Response(data=data, status=status.HTTP_200_OK)
@@ -64,6 +67,7 @@ class AuthViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated, ])
     def password_change(self, request):
+        """ USER 비민번호 변경 --- 기존 비밀번호와 변경할 비밀번호를 입력 후 비밀번호 변경 [token required]"""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         request.user.set_password(serializer.validated_data['new_password'])
@@ -74,6 +78,7 @@ class AuthViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated, ])
     def withdrawal(self, request):
+        """ 회원탈퇴 [token required]"""
         # serializer = self.get_serializer(data=request.data)
         # serializer.is_valid(raise_exception=True)
         request.user.withdrawal_status = 1
@@ -86,6 +91,7 @@ class AuthViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def user_info(self, request):
+        """ USER 정보 리스트 출력 --- uid 번호와 USER email 정보 전송"""
         query_set = User.objects.all()
         print(query_set)
         serializer = UserInfoSerializer(query_set, many=True)
@@ -133,6 +139,7 @@ class RegisterViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['GET', ], detail=False)
     def company(self,request):
+        """ 회사 목룍 가져오기"""
         query_set = Company.objects.all()
         serializer = CompanySerializer(query_set, many=True)
         return JsonResponse(serializer.data, safe=False)
@@ -142,6 +149,7 @@ class RegisterViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def company_register(self, request):
+        """ 회사 등록 : 사용자가 가입한 P2P 사이트의 id와 pw를 입력하여 가입 회사 등록 [token required]"""
         data = request.data
         print(data)
         try:
@@ -181,6 +189,7 @@ class RegisterViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
     def registered_company(self, request):
+        """ 사용자가 등록한 회사 목록 출력 [token required] """
         query_set = request.user.register_set.all()
         print(query_set)
         serializer = CompanyRegisterSerializer(query_set, many=True)
