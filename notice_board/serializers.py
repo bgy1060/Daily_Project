@@ -51,3 +51,9 @@ class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('category_id', 'category_name')
+
+
+class FAQListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = ('id', 'question', 'answer', 'view', 'order')

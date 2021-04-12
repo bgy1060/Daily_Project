@@ -63,3 +63,13 @@ class CommentLike(models.Model):
         db_table = 'comment_like'
         unique_together = ['uid', 'comment_id']
 
+
+class FAQ(models.Model):
+    id = models.AutoField(primary_key=True)
+    question = models.CharField(max_length=100)
+    answer = models.CharField(max_length=200)
+    view = models.IntegerField()
+    order = models.IntegerField(unique=True)
+
+    class Meta:
+        db_table = 'faq'

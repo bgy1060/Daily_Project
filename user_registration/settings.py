@@ -80,8 +80,7 @@ INSTALLED_APPS = [
     'account',
     'daily_funding',
     'notice_board',
-
-
+    'drf_yasg',
 
 ]
 

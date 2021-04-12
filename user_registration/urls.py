@@ -20,10 +20,14 @@ from users.views import *
 from daily_funding.views import *
 from notice_board.views import *
 
+
 router = routers.DefaultRouter(trailing_slash=False)
 router.register('api/auth', AuthViewSet, basename='auth')
 router.register('api/register', RegisterViewSet, basename='register')
 router.register('api/company', DailyViewSet, basename='daily_funding')
 router.register('api/notice', NoticeBoardViewSet, basename='notice_board')
 
-urlpatterns = router.urls
+urlpatterns = router.urls + [
+    path('admin/', admin.site.urls),
+
+]

@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from . import serializers
 from .models import *
-from .serializers import PostListSerializer, DetailPostSerializer, CommentListSerializer, CategoryListSerializer
+from .serializers import PostListSerializer, DetailPostSerializer, CommentListSerializer, CategoryListSerializer, FAQListSerializer
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
 
@@ -292,3 +292,36 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
             return Response(data=message, status=status.HTTP_200_OK)
 
         return Response(data=message, status=status.HTTP_200_OK)
+
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False)
+    def update_faq_view(self, request):
+        faq_id = request.data['faq_id']
+        faq = FAQ.objects.get(id=faq_id)
+        faq.view = faq.view + 1
+        faq.save()
+        return Response(status=status.HTTP_200_OK)
+
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False)
+    def faq_list(self, request):
+        paginator = PageNumberPagination()
+        paginator.page_size = request.data['page_size']
+        query_set = FAQ.objects.all().order_by('order')
+        result_page = paginator.paginate_queryset(query_set, request)
+        serializer = FAQListSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+        return Response(status=status.HTTP_200_OK)
+
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def my_post(self, request):
+        paginator = PageNumberPagination()
+        paginator.page_size = request.data['page_size']
+        query_set = NoticeBoard.objects.filter(uid=request.user.id).order_by('-post_id')
+        result_page = paginator.paginate_queryset(query_set, request)
+        serializer = PostListSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+        return Response(status=status.HTTP_200_OK)

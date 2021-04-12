@@ -18,7 +18,7 @@ class CustomUser(AbstractUser):
     withdrawal_date = models.DateTimeField(blank=True, null=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['username']
 
     def __str__(self):
         return f"{self.email} - {self.first_name} {self.last_name}"
