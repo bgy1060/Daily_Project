@@ -2,6 +2,7 @@
 from django.contrib.auth import get_user_model, logout
 from django.core.exceptions import ImproperlyConfigured
 from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -18,6 +19,7 @@ import base64
 from Crypto import Random
 from Crypto.Cipher import AES
 import my_settings
+from drf_yasg import openapi
 
 User = get_user_model()
 
@@ -145,7 +147,13 @@ class RegisterViewSet(viewsets.GenericViewSet):
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 
-
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'company_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='등록하고 싶은 회사 ID'),
+            'username':openapi.Schema(type=openapi.TYPE_STRING, description='P2P 회사(company_id를 가진 회사) 아이디'),
+            'user_password': openapi.Schema(type=openapi.TYPE_STRING, description='P2P 회사(company_id를 가진 회사) 비밀번호'),
+        }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def company_register(self, request):

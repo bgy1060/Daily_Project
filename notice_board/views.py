@@ -244,7 +244,9 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def add_post_like(self, request):
-        """ 게시글 좋아요 & 싫어요 누르기 : 좋아요를 누를 경우 like_dislike = 1로, 싫어요를 누를 경우 like_dislike = 0으로 설정 [token required]"""
+        """ 게시글 좋아요 & 싫어요 누르기 : 좋아요를 누를 경우 like_dislike = 1로, 싫어요를 누를 경우 like_dislike = 0으로 설정 [token required]
+            - 이미 게시글에 좋아요 & 싫어요를 눌렀을 경우 "You have already liked/disliked it 메세지 전송"
+        """
         try:
             post_id = NoticeBoard.objects.get(post_id=int(request.data['post_id']))
         except:
@@ -330,7 +332,9 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def add_comment_like(self, request):
-        """ 댓글 좋아요 & 싫어요 누르기 : 좋아요를 누를 경우 like_dislike = 1로, 싫어요를 누를 경우 like_dislike = 0으로 설정 [token required]"""
+        """ 댓글 좋아요 & 싫어요 누르기 : 좋아요를 누를 경우 like_dislike = 1로, 싫어요를 누를 경우 like_dislike = 0으로 설정 [token required]
+            - 이미 댓글에 좋아요 & 싫어요를 눌렀을 경우 "You have already liked/disliked it 메세지 전송"
+        """
         try:
             comment_id = Comment.objects.get(comment_id=int(request.data['comment_id']))
         except:
