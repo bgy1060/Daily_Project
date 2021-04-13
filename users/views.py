@@ -1,6 +1,7 @@
 # Create your views here.
 from django.contrib.auth import get_user_model, logout
 from django.core.exceptions import ImproperlyConfigured
+from django.db.models import Count
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
@@ -10,8 +11,9 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 
 from company.models import Company
+from notice_board.models import *
 from . import serializers
-from .serializers import CompanyRegisterSerializer,CompanySerializer,UserInfoSerializer
+from .serializers import CompanyRegisterSerializer, CompanySerializer, UserInfoSerializer
 from .utils import get_and_authenticate_user, create_user_account
 from django.utils import timezone
 
@@ -42,10 +44,36 @@ class AuthViewSet(viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         user = get_and_authenticate_user(**serializer.validated_data)
         data = serializers.LoginSerializer(user).data
-        if data['withdrawal_status'] == True:
+        if data['withdrawal_status']:
             data = {"There is no member information."}
         else:
             data = serializers.LoginSerializer(user).data
+            point_action = Point_action.objects.get(action='로그인')
+            if Point_List.objects.filter(uid=data['id'], date__year=timezone.now().year,
+                                         date__month=timezone.now().month,
+                                         date__day=timezone.now().day,
+                                         action_id=point_action.id).count() >= point_action.limit_number_of_day:
+                pass
+            else:
+                uid = CustomUser.objects.get(id=data['id'])
+                try:
+                    total_point = Point_List.objects.filter(uid=data['id']).order_by('-id')[0].total_point
+                    Point_List.objects.create(point=point_action.point_value,
+                                              total_point=total_point + point_action.point_value,
+                                              date=timezone.now(),
+                                              action_id=point_action,
+                                              detail_action='로그인',
+                                              uid=uid)
+                except:
+                    Point_List.objects.create(point=point_action.point_value,
+                                              total_point=point_action.point_value,
+                                              date=timezone.now(),
+                                              action_id=point_action,
+                                              detail_action='로그인',
+                                              uid=uid)
+
+                print(point_action.point_value)
+
         return Response(data=data, status=status.HTTP_200_OK)
 
     @csrf_exempt
@@ -140,7 +168,7 @@ class RegisterViewSet(viewsets.GenericViewSet):
 
     @csrf_exempt
     @action(methods=['GET', ], detail=False)
-    def company(self,request):
+    def company(self, request):
         """ 회사 목룍 가져오기"""
         query_set = Company.objects.all()
         serializer = CompanySerializer(query_set, many=True)
@@ -151,7 +179,7 @@ class RegisterViewSet(viewsets.GenericViewSet):
         type=openapi.TYPE_OBJECT,
         properties={
             'company_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='등록하고 싶은 회사 ID'),
-            'username':openapi.Schema(type=openapi.TYPE_STRING, description='P2P 회사(company_id를 가진 회사) 아이디'),
+            'username': openapi.Schema(type=openapi.TYPE_STRING, description='P2P 회사(company_id를 가진 회사) 아이디'),
             'user_password': openapi.Schema(type=openapi.TYPE_STRING, description='P2P 회사(company_id를 가진 회사) 비밀번호'),
         }))
     @csrf_exempt
@@ -182,7 +210,8 @@ class RegisterViewSet(viewsets.GenericViewSet):
             '''
 
             try:
-                request.user.register_set.create(username=encrypted_username.decode('utf-8'), user_password=encrypted_user_password.decode('utf-8'),
+                request.user.register_set.create(username=encrypted_username.decode('utf-8'),
+                                                 user_password=encrypted_user_password.decode('utf-8'),
                                                  company_id=company_id, uid=request.user.id)
                 message = {"Information registration completed!"}
             except:
@@ -192,7 +221,6 @@ class RegisterViewSet(viewsets.GenericViewSet):
             message = {"Please enter your company name correctly"}
 
         return Response(data=message, status=status.HTTP_201_CREATED)
-
 
     @csrf_exempt
     @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])

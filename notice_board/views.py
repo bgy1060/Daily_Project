@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from . import serializers
@@ -36,10 +36,34 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
     def write_post(self, request):
         """ 새로운 글 쓰기 : title, content, category_id 입력 [token required] """
         data = request.data
-        print(data)
         category_id = Category.objects.get(category_id=int(request.data['category_id']))
         request.user.noticeboard_set.create(title=data['title'], content=data['content'], date=timezone.now(),
                                             category_id=category_id, uid=request.user.id)
+
+        point_action = Point_action.objects.get(action='게시물 작성')
+
+        if Point_List.objects.filter(uid=request.user.id, date__year=timezone.now().year,
+                                     date__month=timezone.now().month,
+                                     date__day=timezone.now().day,
+                                     action_id=point_action.id).count() >= point_action.limit_number_of_day:
+            pass
+        else:
+            uid = CustomUser.objects.get(id=request.user.id)
+            try:
+                total_point = Point_List.objects.filter(uid=request.user.id).order_by('-id')[0].total_point
+                Point_List.objects.create(point=point_action.point_value,
+                                          total_point=total_point + point_action.point_value,
+                                          date=timezone.now(),
+                                          action_id=point_action,
+                                          detail_action='새로운 게시글 작성',
+                                          uid=uid)
+            except:
+                Point_List.objects.create(point=point_action.point_value,
+                                          total_point=point_action.point_value,
+                                          date=timezone.now(),
+                                          action_id=point_action,
+                                          detail_action='새로운 게시글 작성',
+                                          uid=uid)
         return Response(status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=openapi.Schema(
@@ -87,8 +111,24 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
     def detail_post(self, request):
         """ 특정 글의 세부 내용 : post_id 필요"""
         post_id = request.data['post_id']
-        query_set = NoticeBoard.objects.get(post_id=post_id)
-        serializer = DetailPostSerializer(query_set)
+        try:
+            query_set = NoticeBoard.objects.get(post_id=post_id)
+        except:
+            return Response(data={"There is no post!"},status=status.HTTP_200_OK)
+
+        if request.user.is_anonymous:
+            is_like = False
+            editable = False
+        else:
+            try:
+                NoticeBoardLike.objects.get(post_id=post_id, uid=request.user.id)
+                is_like = True
+                editable = request.user.id
+            except:
+                is_like = False
+                editable = request.user.id
+
+        serializer = DetailPostSerializer(query_set, context=[is_like, editable])
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 
@@ -139,7 +179,7 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
 
         }))
     @csrf_exempt
-    @action(methods=['POST', ], detail=False)
+    @action(methods=['POST', ], detail=False, permission_classes=[])
     def post_list(self, request):
         """ 전체 글 목룍 가져오기 : category_id 필드가 없는 경우, 특정 카테고리의 전체 글 목록 가져오기 : category_id 필드에 특정 카테고리 작성 """
         try:
@@ -155,6 +195,7 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
             paginator.page_size = request.data['page_size']
             query_set = NoticeBoard.objects.all().order_by('-post_id')
             result_page = paginator.paginate_queryset(query_set, request)
+
             serializer = PostListSerializer(result_page, many=True)
 
         return paginator.get_paginated_response(serializer.data)
@@ -178,6 +219,21 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
             serializer = CommentListSerializer(query_set, many=True)
         except:
             query_set = Comment.objects.filter(post_id=post_id).filter(parent_comment__isnull=True)
+            if request.user.is_anonymous:
+                context = False
+                editable = False
+            else:
+                try:
+                    comment=CommentLike.objects.get(uid=request.user.id)
+                    print(comment)
+                    context = True
+                    editable = request.user.id
+                except:
+                    comment = CommentLike.objects.filter(uid=request.user.id)
+                    print(comment[0].comment_id)
+                    print("여기")
+                    context = False
+                    editable = request.user.id
             serializer = CommentListSerializer(query_set, many=True)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
@@ -195,13 +251,60 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         """ 댓글 작성하기 [token required]"""
         data = request.data
         post_id = NoticeBoard.objects.get(post_id=int(request.data['post_id']))
+        point_action = Point_action.objects.get(action='댓글 작성')
+
         try:
             parent_comment = Comment.objects.get(comment_id=int(request.data['parent_comment']))
             request.user.comment_set.create(comment_content=data['comment_content'], date=timezone.now(),
                                             post_id=post_id, uid=request.user.id, parent_comment=parent_comment)
+
+            if Point_List.objects.filter(uid=request.user.id, date__year=timezone.now().year,
+                                         date__month=timezone.now().month,
+                                         date__day=timezone.now().day).count() >= point_action.limit_number_of_day:
+                pass
+            else:
+                uid = CustomUser.objects.get(id=request.user.id)
+                try:
+                    total_point = Point_List.objects.filter(uid=request.user.id).order_by('-id')[0].total_point
+                    Point_List.objects.create(point=point_action.point_value,
+                                              total_point=total_point + point_action.point_value,
+                                              date=timezone.now(),
+                                              action_id=point_action,
+                                              detail_action='새로운 댓글 작성',
+                                              uid=uid)
+                except:
+                    Point_List.objects.create(point=point_action.point_value,
+                                              total_point=point_action.point_value,
+                                              date=timezone.now(),
+                                              action_id=point_action,
+                                              detail_action='새로운 댓글 작성',
+                                              uid=uid)
         except:
             request.user.comment_set.create(comment_content=data['comment_content'], date=timezone.now(),
                                             post_id=post_id, uid=request.user.id)
+            if Point_List.objects.filter(uid=request.user.id, date__year=timezone.now().year,
+                                         date__month=timezone.now().month,
+                                         date__day=timezone.now().day,
+                                         action_id=point_action.id).count() >= point_action.limit_number_of_day:
+                pass
+            else:
+                uid = CustomUser.objects.get(id=request.user.id)
+                try:
+                    total_point = Point_List.objects.filter(uid=request.user.id).order_by('-id')[0].total_point
+                    Point_List.objects.create(point=point_action.point_value,
+                                              total_point=total_point + point_action.point_value,
+                                              date=timezone.now(),
+                                              action_id=point_action,
+                                              detail_action='새로운 댓글 작성',
+                                              uid=uid)
+                except:
+                    Point_List.objects.create(point=point_action.point_value,
+                                              total_point=point_action.point_value,
+                                              date=timezone.now(),
+                                              action_id=point_action,
+                                              detail_action='새로운 댓글 작성',
+                                              uid=uid)
+
         return Response(status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=openapi.Schema(

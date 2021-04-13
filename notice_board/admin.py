@@ -25,3 +25,9 @@ class CommentAdmin(admin.ModelAdmin):
 class FAQAdmin(admin.ModelAdmin):
     list_display = ['id', 'question', 'answer', 'view', 'order']
     list_display_links = ['id', 'question', 'answer']
+
+
+@admin.register(Point_action)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ['id', 'action', 'point_value', 'limit_number_of_day']
+    list_display_links = ['id', 'action']

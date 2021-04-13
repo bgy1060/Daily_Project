@@ -73,3 +73,26 @@ class FAQ(models.Model):
 
     class Meta:
         db_table = 'faq'
+
+
+class Point_action(models.Model):
+    id = models.IntegerField(primary_key=True, unique=True)
+    action = models.CharField(max_length=50)
+    point_value = models.IntegerField()
+    limit_number_of_day = models.SmallIntegerField()
+
+    class Meta:
+        db_table = 'point_action'
+
+
+class Point_List(models.Model):
+    id = models.AutoField(primary_key=True)
+    action_id = models.ForeignKey(Point_action, on_delete=models.CASCADE)
+    uid = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    point = models.IntegerField()
+    total_point = models.IntegerField(default=0)
+    date = models.DateTimeField()
+    detail_action = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = 'point_list'
