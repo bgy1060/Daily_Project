@@ -282,6 +282,31 @@ class RegisterViewSet(viewsets.GenericViewSet):
                 request.user.register_set.create(username=encrypted_username.decode('utf-8'),
                                                  user_password=encrypted_user_password.decode('utf-8'),
                                                  company_id=company_id, uid=request.user.id)
+
+                point_action = Point_action.objects.get(action='업체 연동')
+
+                if Point_List.objects.filter(uid=request.user.id, date__year=timezone.now().year,
+                                             date__month=timezone.now().month,
+                                             date__day=timezone.now().day,
+                                             action_id=point_action.id).count() >= point_action.limit_number_of_day:
+                    pass
+                else:
+                    uid = CustomUser.objects.get(id=request.user.id)
+                    try:
+                        total_point = Point_List.objects.filter(uid=request.user.id).order_by('-id')[0].total_point
+                        Point_List.objects.create(point=point_action.point_value,
+                                                  total_point=total_point + point_action.point_value,
+                                                  date=timezone.now(),
+                                                  action_id=point_action,
+                                                  detail_action='새로운 P2P 업체 연동 감사 포인트',
+                                                  uid=uid)
+                    except:
+                        Point_List.objects.create(point=point_action.point_value,
+                                                  total_point=point_action.point_value,
+                                                  date=timezone.now(),
+                                                  action_id=point_action,
+                                                  detail_action='새로운 P2P 업체 연동 감사 포인트',
+                                                  uid=uid)
                 message = {"Information registration completed!"}
             except:
                 message = {"This site has already been registered!"}
