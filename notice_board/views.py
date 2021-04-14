@@ -8,7 +8,8 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from . import serializers
 from .models import *
-from .serializers import PostListSerializer, DetailPostSerializer, CommentListSerializer, CategoryListSerializer, FAQListSerializer
+from .serializers import PostListSerializer, DetailPostSerializer, CommentListSerializer, CategoryListSerializer, \
+    FAQListSerializer
 from users.serializers import EmptySerializer
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
@@ -98,6 +99,24 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         post_id = request.data['post_id']
         post = request.user.noticeboard_set.get(post_id=post_id)
         post.delete()
+
+        point_action = Point_action.objects.get(action='게시글 삭제')
+        uid = CustomUser.objects.get(id=request.user.id)
+        try:
+            total_point = Point_List.objects.filter(uid=request.user.id).order_by('-id')[0].total_point
+            Point_List.objects.create(point=point_action.point_value,
+                                      total_point=total_point + point_action.point_value,
+                                      date=timezone.now(),
+                                      action_id=point_action,
+                                      detail_action='작성한 게시글 삭제',
+                                      uid=uid)
+        except:
+            Point_List.objects.create(point=point_action.point_value,
+                                      total_point=point_action.point_value,
+                                      date=timezone.now(),
+                                      action_id=point_action,
+                                      detail_action='작성한 게시글 삭제',
+                                      uid=uid)
         return Response(status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=openapi.Schema(
@@ -109,12 +128,15 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def detail_post(self, request):
-        """ 특정 글의 세부 내용 : post_id 필요"""
+        """ 특정 글의 세부 내용 : post_id 필요
+            - "is_like_dislike": true 이면 좋아요/싫어요를 이미 누른 상태 (token 을 보내줘야만 확인 가능)
+            - "editable": true 이면 수정 가능 (token을 보내줘야 확인 가능)
+        """
         post_id = request.data['post_id']
         try:
             query_set = NoticeBoard.objects.get(post_id=post_id)
         except:
-            return Response(data={"There is no post!"},status=status.HTTP_200_OK)
+            return Response(data={"There is no post!"}, status=status.HTTP_200_OK)
 
         if request.user.is_anonymous:
             is_like = False
@@ -211,30 +233,26 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False)
     def comment_list(self, request):
-        """ 전체 댓글 목록 가져오기 : parent_comment 필드 생략, 특정 댓글의 대댓글 조회 : parent_comment 에 대댓글을 보고 싶은 댓글의 comment_id 입력"""
+        """ 전체 댓글 목록 가져오기 : parent_comment 필드 생략, 특정 댓글의 대댓글 조회 : parent_comment 에 대댓글을 보고 싶은 댓글의 comment_id 입력
+            - "is_like_dislike": true 이면 좋아요/싫어요를 이미 누른 상태 (token 을 보내줘야만 확인 가능)
+            - "editable": true 이면 수정 가능 (token을 보내줘야 확인 가능)
+        """
         post_id = request.data['post_id']
         try:
             parent_comment = request.data['parent_comment']
             query_set = Comment.objects.filter(post_id=post_id).filter(parent_comment=parent_comment)
-            serializer = CommentListSerializer(query_set, many=True)
+            if request.user.is_anonymous:
+                context = False
+            else:
+                context = request.user.id
+            serializer = CommentListSerializer(query_set, many=True, context=context)
         except:
             query_set = Comment.objects.filter(post_id=post_id).filter(parent_comment__isnull=True)
             if request.user.is_anonymous:
                 context = False
-                editable = False
             else:
-                try:
-                    comment=CommentLike.objects.get(uid=request.user.id)
-                    print(comment)
-                    context = True
-                    editable = request.user.id
-                except:
-                    comment = CommentLike.objects.filter(uid=request.user.id)
-                    print(comment[0].comment_id)
-                    print("여기")
-                    context = False
-                    editable = request.user.id
-            serializer = CommentListSerializer(query_set, many=True)
+                context = request.user.id
+            serializer = CommentListSerializer(query_set, many=True, context=context)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 
@@ -336,6 +354,24 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         comment_id = request.data['comment_id']
         comment = request.user.comment_set.get(comment_id=comment_id)
         comment.delete()
+
+        point_action = Point_action.objects.get(action='댓글 삭제')
+        uid = CustomUser.objects.get(id=request.user.id)
+        try:
+            total_point = Point_List.objects.filter(uid=request.user.id).order_by('-id')[0].total_point
+            Point_List.objects.create(point=point_action.point_value,
+                                      total_point=total_point + point_action.point_value,
+                                      date=timezone.now(),
+                                      action_id=point_action,
+                                      detail_action='작성한 댓글 삭제',
+                                      uid=uid)
+        except:
+            Point_List.objects.create(point=point_action.point_value,
+                                      total_point=point_action.point_value,
+                                      date=timezone.now(),
+                                      action_id=point_action,
+                                      detail_action='작성한 댓글 삭제',
+                                      uid=uid)
         return Response(status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=openapi.Schema(
@@ -373,7 +409,7 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
                 post = NoticeBoard.objects.get(post_id=request.data['post_id'])
                 post.dislike = NoticeBoard.objects.get(post_id=request.data['post_id']).dislike + 1
                 post.save()
-                data=post.dislike
+                data = post.dislike
             except:
                 message = {"You have already disliked it"}
                 return Response(data=message, status=status.HTTP_200_OK)
@@ -446,7 +482,8 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         like_dislike = request.data['like_dislike']
         if like_dislike == 1:
             try:
-                request.user.commentlike_set.create(like_dislike=like_dislike, comment_id=comment_id, uid=request.user.id)
+                request.user.commentlike_set.create(like_dislike=like_dislike, comment_id=comment_id,
+                                                    uid=request.user.id)
                 comment = Comment.objects.get(comment_id=request.data['comment_id'])
                 comment.like = Comment.objects.get(comment_id=request.data['comment_id']).like + 1
                 comment.save()
@@ -457,7 +494,8 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
 
         elif like_dislike == 0:
             try:
-                request.user.commentlike_set.create(like_dislike=like_dislike, comment_id=comment_id, uid=request.user.id)
+                request.user.commentlike_set.create(like_dislike=like_dislike, comment_id=comment_id,
+                                                    uid=request.user.id)
                 comment = Comment.objects.get(comment_id=request.data['comment_id'])
                 comment.dislike = Comment.objects.get(comment_id=request.data['comment_id']).dislike + 1
                 comment.save()
@@ -523,7 +561,7 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
     @action(methods=['POST', ], detail=False)
     def update_faq_view(self, request):
         """ FAQ 조회수 업데이트 """
-        
+
         faq_id = request.data['faq_id']
         faq = FAQ.objects.get(id=faq_id)
         faq.view = faq.view + 1

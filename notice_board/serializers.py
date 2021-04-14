@@ -45,13 +45,29 @@ class DetailPostSerializer(serializers.ModelSerializer):
 
 class CommentListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
+    is_like_dislike = serializers.SerializerMethodField()
+    editable = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ('comment_id', 'user', 'comment_content', 'date', 'like', 'dislike', 'post_id', 'parent_comment')
+        fields = ('comment_id', 'user', 'comment_content', 'date', 'like', 'dislike', 'post_id', 'parent_comment','is_like_dislike','editable')
 
     def get_user(self, obj: User):
         return obj.uid.email
+
+    def get_is_like_dislike(self, obj: Comment):
+        try:
+            obj.commentlike_set.get(uid=obj.uid)
+            return True
+        except:
+            return False
+
+    def get_editable(self, obj: User):
+        if self.context == obj.uid.id:
+            return True
+        else:
+            return False
+
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
