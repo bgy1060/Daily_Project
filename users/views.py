@@ -23,6 +23,9 @@ from Crypto.Cipher import AES
 import my_settings
 from drf_yasg import openapi
 
+import uuid
+import codecs
+
 User = get_user_model()
 
 
@@ -84,6 +87,23 @@ class AuthViewSet(viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         user = create_user_account(**serializer.validated_data)
         data = serializers.AuthUserSerializer(user).data
+        point_action = Point_action.objects.get(action='회원가입')
+        uid = CustomUser.objects.get(id=data['id'])
+        try:
+            total_point = Point_List.objects.filter(uid=data['id']).order_by('-id')[0].total_point
+            Point_List.objects.create(point=point_action.point_value,
+                                      total_point=total_point + point_action.point_value,
+                                      date=timezone.now(),
+                                      action_id=point_action,
+                                      detail_action='회원가입 축하 포인트',
+                                      uid=uid)
+        except:
+            Point_List.objects.create(point=point_action.point_value,
+                                      total_point=point_action.point_value,
+                                      date=timezone.now(),
+                                      action_id=point_action,
+                                      detail_action='회원가입 축하 포인트',
+                                      uid=uid)
         return Response(data=data, status=status.HTTP_201_CREATED)
 
     @csrf_exempt
@@ -231,3 +251,31 @@ class RegisterViewSet(viewsets.GenericViewSet):
         serializer = CompanyRegisterSerializer(query_set, many=True)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
+
+
+class CodeViewSet(viewsets.GenericViewSet):
+    permission_classes = [AllowAny, ]
+    serializer_class = serializers.EmptySerializer
+    serializer_classes = {
+
+    }
+
+    @csrf_exempt
+    @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def create_code(self, request):
+        """친구 초대 코드 생성 [token required]"""
+        if request.user.ucode is None:
+            while True:
+                try:
+                    request.user.ucode = base64.urlsafe_b64encode(
+                        codecs.encode(uuid.uuid4().bytes, "base64").rstrip()
+                    ).decode()[:8]
+                    request.user.save()
+                    break
+                except:
+                    pass
+        else:
+            pass
+
+        data = request.user.ucode
+        return Response(data=data, status=status.HTTP_201_CREATED)
