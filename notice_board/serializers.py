@@ -25,10 +25,11 @@ class DetailPostSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     is_like_dislike = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
+    like_dislike = serializers.SerializerMethodField()
 
     class Meta:
         model = NoticeBoard
-        fields = ('post_id', 'user', 'title', 'content', 'date', 'views', 'like', 'dislike', 'category_id', 'is_like_dislike','editable')
+        fields = ('post_id', 'user', 'title', 'content', 'date', 'views', 'like', 'dislike', 'category_id', 'is_like_dislike','like_dislike','editable')
 
     def get_user(self, obj: User):
         return obj.uid.email
@@ -41,16 +42,19 @@ class DetailPostSerializer(serializers.ModelSerializer):
             return True
         else:
             return False
+    def get_like_dislike(self, obj: User):
+        return self.context[2]
 
 
 class CommentListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     is_like_dislike = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
+    like_dislike = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ('comment_id', 'user', 'comment_content', 'date', 'like', 'dislike', 'post_id', 'parent_comment','is_like_dislike','editable')
+        fields = ('comment_id', 'user', 'comment_content', 'date', 'like', 'dislike', 'post_id', 'parent_comment','is_like_dislike','like_dislike','editable')
 
     def get_user(self, obj: User):
         return obj.uid.email
@@ -68,6 +72,11 @@ class CommentListSerializer(serializers.ModelSerializer):
         else:
             return False
 
+    def get_like_dislike(self, obj: Comment):
+        try:
+            return int(obj.commentlike_set.get(uid=obj.uid).like_dislike)
+        except:
+            return-1
 
 
 class CategoryListSerializer(serializers.ModelSerializer):

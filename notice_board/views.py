@@ -139,18 +139,21 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
             return Response(data={"There is no post!"}, status=status.HTTP_200_OK)
 
         if request.user.is_anonymous:
-            is_like = False
+            is_like_dislke = False
             editable = False
+            like_dislike = -1
         else:
             try:
-                NoticeBoardLike.objects.get(post_id=post_id, uid=request.user.id)
-                is_like = True
+                n=NoticeBoardLike.objects.get(post_id=post_id, uid=request.user.id)
+                is_like_dislke = True
                 editable = request.user.id
+                like_dislike = int(n.like_dislike)
             except:
-                is_like = False
+                is_like_dislke = False
                 editable = request.user.id
+                like_dislike = -1
 
-        serializer = DetailPostSerializer(query_set, context=[is_like, editable])
+        serializer = DetailPostSerializer(query_set, context=[is_like_dislke, editable, like_dislike])
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 
