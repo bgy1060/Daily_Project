@@ -104,6 +104,55 @@ class AuthViewSet(viewsets.GenericViewSet):
                                       action_id=point_action,
                                       detail_action='회원가입 축하 포인트',
                                       uid=uid)
+
+        try:
+            uid = CustomUser.objects.get(ucode=request.data['ucode'])
+            point_action = Point_action.objects.get(action='친구 가입')
+
+            if Point_List.objects.filter(uid=uid, date__year=timezone.now().year,
+                                         date__month=timezone.now().month,
+                                         date__day=timezone.now().day,
+                                         action_id=point_action.id).count() >= point_action.limit_number_of_day:
+                pass
+            else:
+                try:
+                    total_point = Point_List.objects.filter(uid=data['id']).order_by('-id')[0].total_point
+                    Point_List.objects.create(point=point_action.point_value,
+                                              total_point=total_point + point_action.point_value,
+                                              date=timezone.now(),
+                                              action_id=point_action,
+                                              detail_action='초대 친구 가입 축하 포인트',
+                                              uid=uid)
+                except:
+                    Point_List.objects.create(point=point_action.point_value,
+                                              total_point=point_action.point_value,
+                                              date=timezone.now(),
+                                              action_id=point_action,
+                                              detail_action='초대 친구 가입 축하 포인트',
+                                              uid=uid)
+
+            point_action = Point_action.objects.get(action='친구 가입')
+            uid = CustomUser.objects.get(id=data['id'])
+
+            try:
+                total_point = Point_List.objects.filter(uid=data['id']).order_by('-id')[0].total_point
+                Point_List.objects.create(point=point_action.point_value,
+                                          total_point=total_point + point_action.point_value,
+                                          date=timezone.now(),
+                                          action_id=point_action,
+                                          detail_action='초대 친구 가입 축하 포인트',
+                                          uid=uid)
+            except:
+                Point_List.objects.create(point=point_action.point_value,
+                                          total_point=point_action.point_value,
+                                          date=timezone.now(),
+                                          action_id=point_action,
+                                          detail_action='초대 친구 가입 축하 포인트',
+                                          uid=uid)
+        except:
+            pass
+
+        print(request.data['ucode'])
         return Response(data=data, status=status.HTTP_201_CREATED)
 
     @csrf_exempt
@@ -278,4 +327,37 @@ class CodeViewSet(viewsets.GenericViewSet):
             pass
 
         data = request.user.ucode
+        return Response(data=data, status=status.HTTP_201_CREATED)
+
+    @csrf_exempt
+    @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def get_point(self, request):
+        """친구 초대 메시지 전송 완료 후 포인트 지급 [token required]"""
+
+        point_action = Point_action.objects.get(action='친구 초대')
+        if Point_List.objects.filter(uid=request.user.id, date__year=timezone.now().year,
+                                     date__month=timezone.now().month,
+                                     date__day=timezone.now().day,
+                                     action_id=point_action.id).count() >= point_action.limit_number_of_day:
+            data = "You have exceeded the number of times you can receive points."
+            pass
+        else:
+            uid = CustomUser.objects.get(id=request.user.id)
+            try:
+                total_point = Point_List.objects.filter(uid=request.user.id).order_by('-id')[0].total_point
+                Point_List.objects.create(point=point_action.point_value,
+                                          total_point=total_point + point_action.point_value,
+                                          date=timezone.now(),
+                                          action_id=point_action,
+                                          detail_action='친구 초대',
+                                          uid=uid)
+            except:
+                Point_List.objects.create(point=point_action.point_value,
+                                          total_point=point_action.point_value,
+                                          date=timezone.now(),
+                                          action_id=point_action,
+                                          detail_action='친구 초대',
+                                          uid=uid)
+            data="Point payment completed!"
+            
         return Response(data=data, status=status.HTTP_201_CREATED)
