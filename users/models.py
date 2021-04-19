@@ -17,7 +17,7 @@ class CustomUser(AbstractUser):
     withdrawal_status = models.BooleanField(default=False)
     withdrawal_date = models.DateTimeField(blank=True, null=True)
 
-    ucode = models.CharField(max_length=16, unique=True, null=True, blank=True)
+    code = models.CharField(max_length=16, null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

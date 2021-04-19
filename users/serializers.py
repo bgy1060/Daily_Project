@@ -113,6 +113,12 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
 
 class PointSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Point_List
+        fields = ['total_point']
+
+
+class PointListSerializer(serializers.ModelSerializer):
     action = serializers.SerializerMethodField()
 
     class Meta:

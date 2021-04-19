@@ -8,10 +8,12 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.pagination import PageNumberPagination
 
+from datetime import datetime
 from notice_board.models import *
 from . import serializers
-from .serializers import CompanyRegisterSerializer, CompanySerializer, UserInfoSerializer,PointSerializer
+from .serializers import CompanyRegisterSerializer, CompanySerializer, UserInfoSerializer, PointSerializer, PointListSerializer
 from .utils import get_and_authenticate_user, create_user_account
 from django.utils import timezone
 
@@ -103,7 +105,11 @@ class AuthViewSet(viewsets.GenericViewSet):
                                       uid=uid)
 
         try:
-            uid = CustomUser.objects.get(ucode=request.data['ucode'])
+            if request.data['code']:
+                try:
+                    uid = CustomUser.objects.get(code=request.data['code'])
+                except:
+                    return Response(data={"Invitation Code is invalid!"}, status=status.HTTP_400_BAD_REQUEST)
             point_action = Point_action.objects.get(action='친구 가입')
 
             if Point_List.objects.filter(uid=uid, date__year=timezone.now().year,
@@ -149,7 +155,6 @@ class AuthViewSet(viewsets.GenericViewSet):
         except:
             pass
 
-        print(request.data['ucode'])
         return Response(data=data, status=status.HTTP_201_CREATED)
 
     @csrf_exempt
@@ -194,12 +199,42 @@ class AuthViewSet(viewsets.GenericViewSet):
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'page_size': openapi.Schema(type=openapi.TYPE_INTEGER, description='한 페이지에 표시할 내역 수'),
+            'start': openapi.Schema(type=openapi.TYPE_INTEGER, description='내역 시작 날짜'),
+            'end': openapi.Schema(type=openapi.TYPE_INTEGER, description='내역 끝 날짜'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def my_point_list(self, request):
+        """ USER 포인트 사용 내역 출력 [token required]"""
+        start = datetime.strptime(request.data['start'], "%Y-%m-%d")
+        end = datetime.strptime(request.data['end'], "%Y-%m-%d")
+
+        paginator = PageNumberPagination()
+        paginator.page_size = request.data['page_size']
+        query_set = Point_List.objects.filter(uid=request.user.id,
+                                              date__year__gte=start.year,
+                                              date__month__gte=start.month,
+                                              date__day__gte=start.day,
+                                              date__year__lte=end.year,
+                                              date__month__lte=end.month,
+                                              date__day__lte=end.day).order_by("-id")
+        result_page = paginator.paginate_queryset(query_set, request)
+        serializer = PointListSerializer(result_page, many=True)
+        print(datetime.strptime(request.data['start'], "%Y-%m-%d").year)
+        return JsonResponse(serializer.data, safe=False)
+        return Response(status=status.HTTP_200_OK)
+
     @csrf_exempt
     @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
     def my_point(self, request):
-        """ USER 포인트 사용 내역 출력 [token required]"""
-        query_set = Point_List.objects.filter(uid=request.user.id).order_by("-id")
-        serializer = PointSerializer(query_set, many=True)
+        """ USER 현재 포인트 [token required]"""
+        query_set = Point_List.objects.filter(uid=request.user.id).order_by("-id").first()
+        serializer = PointSerializer(query_set)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 
@@ -322,10 +357,10 @@ class CodeViewSet(viewsets.GenericViewSet):
     @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
     def create_code(self, request):
         """친구 초대 코드 생성 [token required]"""
-        if request.user.ucode is None:
+        if request.user.code is None:
             while True:
                 try:
-                    request.user.ucode = base64.urlsafe_b64encode(
+                    request.user.code = base64.urlsafe_b64encode(
                         codecs.encode(uuid.uuid4().bytes, "base64").rstrip()
                     ).decode()[:8]
                     request.user.save()
@@ -335,7 +370,7 @@ class CodeViewSet(viewsets.GenericViewSet):
         else:
             pass
 
-        data = request.user.ucode
+        data = request.user.code
         return Response(data=data, status=status.HTTP_201_CREATED)
 
     @csrf_exempt
