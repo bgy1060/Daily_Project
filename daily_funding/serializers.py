@@ -8,6 +8,7 @@ from users.models import Investing_Balance,Summary_Investing
 
 User = get_user_model()
 
+
 class CompanyAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account

@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.models import BaseUserManager
 
+from notice_board.models import Point_List
 from users.models import CustomUser, Register
 from company.models import Company
 
@@ -19,7 +20,7 @@ class LoginSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'first_name', 'last_name','withdrawal_status','auth_token')
+        fields = ('id', 'email', 'first_name', 'last_name', 'withdrawal_status', 'auth_token')
 
     def get_auth_token(self, obj):
         token = Token.objects.get(user=obj)
@@ -49,7 +50,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id','username', 'email', 'password', 'first_name', 'last_name')
+        fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name')
 
     def validate_email(self, value):
         user = User.objects.filter(email=value)
@@ -82,26 +83,41 @@ class WithdrawalSerializer(serializers.Serializer):
 
 class CompanyRegisterSerializer(serializers.ModelSerializer):
     company_name = serializers.SerializerMethodField()
+    nickname = serializers.SerializerMethodField()
 
     class Meta:
         model = Register
         fields = (
             'uid',
-            'company_name'
+            'company_name',
+            'nickname'
         )
 
     def get_company_name(self, obj: Register):
         return obj.company_id.company_name
 
+    def get_nickname(self, obj: Register):
+        return obj.company_id.nickname
+
 
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ('id','company_name')
+        fields = ('id', 'company_name')
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id','email')
+        fields = ('id', 'email')
 
+
+class PointSerializer(serializers.ModelSerializer):
+    action = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Point_List
+        fields = ('point', 'total_point', 'date', 'detail_action', 'action', 'uid')
+
+    def get_action(self, obj: Point_List):
+        return obj.action_id.action

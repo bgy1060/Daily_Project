@@ -1,8 +1,5 @@
 # Create your views here.
-import requests
-from django.db import models
-from django.contrib.auth import get_user_model, logout
-from django.core.exceptions import ImproperlyConfigured
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
@@ -12,45 +9,16 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 import datetime
 
-import base64
-from Crypto import Random
-from Crypto.Cipher import AES
 import my_settings
-from . import serializers
 from .serializers import CompanyAccountSerializer, CompanyBalanceSerializer, CompanyWithdrawalSerializer, InvestingiSerializer
-from requests.cookies import create_cookie
-from daily_funding.models import Cookie
 from users.serializers import EmptySerializer
 from drf_yasg import openapi
-
-User = get_user_model()
-
-from company.models import Company
-
-import requests
+import requests, pickle
 from bs4 import BeautifulSoup
 from users.models import *
+import AES
 
-BS = 16
-pad = lambda s: s + (BS - len(s.encode('utf-8')) % BS) * chr(BS - len(s.encode('utf-8')) % BS)
-unpad = lambda s: s[:-ord(s[len(s) - 1:])]
-
-
-class AESCipher:
-    def __init__(self, key):
-        self.key = key
-
-    def encrypt(self, raw):
-        raw = pad(raw)
-        iv = Random.new().read(AES.block_size)
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return base64.b64encode(iv + cipher.encrypt(raw.encode('utf-8')))
-
-    def decrypt(self, enc):
-        enc = base64.b64decode(enc)
-        iv = enc[:16]
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return unpad(cipher.decrypt(enc[16:]))
+User = get_user_model()
 
 
 class DailyViewSet(viewsets.GenericViewSet):
@@ -75,17 +43,42 @@ class DailyViewSet(viewsets.GenericViewSet):
         session = requests.session()
 
         try:
-            cookie_value = Cookie.objects.get(uid=request.user.id, company_id=company_id).cookie_value
-            cookie = create_cookie('PHPSESSID', cookie_value, domain='.www.daily-funding.com')
-            session.cookies.set_cookie(cookie)
-            print("Here!")
+            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'rb') as f:
+                session.cookies.update(pickle.load(f))
 
         except:
             username = request.user.register_set.get(company_id=company_id).username.strip()
             password = request.user.register_set.get(company_id=company_id).user_password.strip()
 
-            decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
-            decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
+            decrypted_username = AES.AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AES.AESCipher(bytes(my_settings.key)).decrypt(password)
+
+            USER = decrypted_username
+            PASS = decrypted_password
+
+            login_info = {
+                "mb_id": USER,  # 아이디 지정
+                "mb_password": PASS  # 비밀번호 지정
+            }
+
+            url_login = "https://www.daily-funding.com/bbs/login_check.php"
+            res = session.post(url_login, data=login_info)
+            res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'wb') as f:
+                pickle.dump(session.cookies, f)
+
+        # 마이페이지에 접근하기
+        url_mypage = "https://www.daily-funding.com/mypage/my_info.php"
+        res = requests.get(url_mypage, cookies=session.cookies)
+        res.raise_for_status()
+
+        if '로그인' in res.text:
+            username = request.user.register_set.get(company_id=company_id).username.strip()
+            password = request.user.register_set.get(company_id=company_id).user_password.strip()
+
+            decrypted_username = AES.AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AES.AESCipher(bytes(my_settings.key)).decrypt(password)
 
             USER = decrypted_username
             PASS = decrypted_password
@@ -100,27 +93,19 @@ class DailyViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            cookie = session.cookies
-            print(cookie.get('PHPSESSID'))
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'wb') as f:
+                pickle.dump(session.cookies, f)
 
-            try:
-                request.user.cookie_set.create(cookie_value=cookie.get('PHPSESSID'), company_id=company_id, uid=request.user.id)
-            except:
-                request.user.cookie_set.update(cookie_value=cookie.get('PHPSESSID'))
-
-
-        # 마이페이지에 접근하기
-        url_mypage = "https://www.daily-funding.com/mypage/my_info.php"
-        res = session.get(url_mypage)
-        res.raise_for_status()
+            # 마이페이지에 접근하기
+            url_mypage = "https://www.daily-funding.com/mypage/my_info.php"
+            res = requests.get(url_mypage, cookies=session.cookies)
+            res.raise_for_status()
 
         soup = BeautifulSoup(res.text, "html.parser")
         data = soup.select('li.bank_num_info em')
-        try:
-            account_holder = data[0].text
 
-        except:
-            pass
+        account_holder = data[0].text
         bank = data[1].text
         account_number = data[2].text
         deposit = int(soup.select_one("ul.info_com span.s_tit em").text.replace('원', '').replace(',', ''))
@@ -155,25 +140,22 @@ class DailyViewSet(viewsets.GenericViewSet):
         session = requests.session()
 
         try:
-            cookie_value = Cookie.objects.get(uid=request.user.id, company_id=company_id).cookie_value
-            cookie = create_cookie('PHPSESSID', cookie_value, domain='.www.daily-funding.com')
-            session.cookies.set_cookie(cookie)
-            print("Here!")
+            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'rb') as f:
+                session.cookies.update(pickle.load(f))
 
         except:
 
             username = request.user.register_set.get(company_id=company_id).username.strip()
             password = request.user.register_set.get(company_id=company_id).user_password.strip()
 
-            decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
-            decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
+            decrypted_username = AES.AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AES.AESCipher(bytes(my_settings.key)).decrypt(password)
 
             USER = decrypted_username
             PASS = decrypted_password
 
             login_info = {
-                "action": "is_login_check",
-                "return_url": "https://www.daily-funding.com/",
+
                 "mb_id": USER,  # 아이디 지정
                 "mb_password": PASS  # 비밀번호 지정
             }
@@ -182,20 +164,42 @@ class DailyViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            cookie = session.cookies
-            print(cookie.get('PHPSESSID'))
-
-            try:
-                request.user.cookie_set.create(cookie_value=cookie.get('PHPSESSID'), company_id=company_id,
-                                               uid=request.user.id)
-            except:
-                request.user.cookie_set.update(cookie_value=cookie.get('PHPSESSID'))
-
+            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'wb') as f:
+                pickle.dump(session.cookies, f)
 
         # 마이페이지에 접근하기
         url_mypage = "https://www.daily-funding.com/mypage/my_info.php"
         res = session.get(url_mypage)
         res.raise_for_status()
+
+        if '로그인' in res.text:
+            username = request.user.register_set.get(company_id=company_id).username.strip()
+            password = request.user.register_set.get(company_id=company_id).user_password.strip()
+
+            decrypted_username = AES.AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AES.AESCipher(bytes(my_settings.key)).decrypt(password)
+
+            USER = decrypted_username
+            PASS = decrypted_password
+
+            login_info = {
+                "url": "https://www.daily-funding.com:443",
+                "mb_id": USER,  # 아이디 지정
+                "mb_password": PASS  # 비밀번호 지정
+            }
+
+            url_login = "https://www.daily-funding.com/bbs/login_check.php"
+            res = session.post(url_login, data=login_info)
+            res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'wb') as f:
+                pickle.dump(session.cookies, f)
+
+            # 마이페이지에 접근하기
+            url_mypage = "https://www.daily-funding.com/mypage/my_info.php"
+            res = requests.get(url_mypage, cookies=session.cookies)
+            res.raise_for_status()
 
         soup = BeautifulSoup(res.text, "html.parser")
 
@@ -234,25 +238,21 @@ class DailyViewSet(viewsets.GenericViewSet):
         session = requests.session()
 
         try:
-            cookie_value = Cookie.objects.get(uid=request.user.id, company_id=company_id).cookie_value
-            cookie = create_cookie('PHPSESSID', cookie_value, domain='.www.daily-funding.com')
-            session.cookies.set_cookie(cookie)
-            print("Here!")
+            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'rb') as f:
+                session.cookies.update(pickle.load(f))
 
         except:
 
             username = request.user.register_set.get(company_id=company_id).username.strip()
             password = request.user.register_set.get(company_id=company_id).user_password.strip()
 
-            decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
-            decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
+            decrypted_username = AES.AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AES.AESCipher(bytes(my_settings.key)).decrypt(password)
 
             USER = decrypted_username
             PASS = decrypted_password
 
             login_info = {
-                "action": "is_login_check",
-                "return_url": "https://www.daily-funding.com/",
                 "mb_id": USER,  # 아이디 지정
                 "mb_password": PASS  # 비밀번호 지정
             }
@@ -261,19 +261,42 @@ class DailyViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            cookie = session.cookies
-            print(cookie.get('PHPSESSID'))
-
-            try:
-                request.user.cookie_set.create(cookie_value=cookie.get('PHPSESSID'), company_id=company_id,
-                                               uid=request.user.id)
-            except:
-                request.user.cookie_set.update(cookie_value=cookie.get('PHPSESSID'))
+            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'wb') as f:
+                pickle.dump(session.cookies, f)
 
         # 마이페이지에 접근하기
         url_mypage = "https://www.daily-funding.com/mypage/my_withdraw2.php"
         res = session.get(url_mypage)
         res.raise_for_status()
+
+        if '로그인' in res.text:
+            username = request.user.register_set.get(company_id=company_id).username.strip()
+            password = request.user.register_set.get(company_id=company_id).user_password.strip()
+
+            decrypted_username = AES.AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AES.AESCipher(bytes(my_settings.key)).decrypt(password)
+
+            USER = decrypted_username
+            PASS = decrypted_password
+
+            login_info = {
+                "url": "https://www.daily-funding.com:443",
+                "mb_id": USER,  # 아이디 지정
+                "mb_password": PASS  # 비밀번호 지정
+            }
+
+            url_login = "https://www.daily-funding.com/bbs/login_check.php"
+            res = session.post(url_login, data=login_info)
+            res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'wb') as f:
+                pickle.dump(session.cookies, f)
+
+            # 마이페이지에 접근하기
+            url_mypage = "https://www.daily-funding.com/mypage/my_info.php"
+            res = requests.get(url_mypage, cookies=session.cookies)
+            res.raise_for_status()
 
         soup = BeautifulSoup(res.text, "html.parser")
 
@@ -290,9 +313,7 @@ class DailyViewSet(viewsets.GenericViewSet):
                                                        trading_time=datetime.datetime.strptime(str(trading_time[i].text),
                                                                                                '%Y-%m-%d %H:%M:%S'),
                                                        company_id=company_id, uid=request.user.id)
-                print("insert")
             except:
-                print('pass')
                 pass
 
         query_set = request.user.deposit_withdrawal_set.filter(company_id=company_id)
@@ -316,25 +337,21 @@ class DailyViewSet(viewsets.GenericViewSet):
         session = requests.session()
 
         try:
-            cookie_value = Cookie.objects.get(uid=request.user.id, company_id=company_id).cookie_value
-            cookie = create_cookie('PHPSESSID', cookie_value, domain='.www.daily-funding.com')
-            session.cookies.set_cookie(cookie)
-            print("Here!")
+            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'rb') as f:
+                session.cookies.update(pickle.load(f))
 
         except:
 
             username = request.user.register_set.get(company_id=company_id).username.strip()
             password = request.user.register_set.get(company_id=company_id).user_password.strip()
 
-            decrypted_username = AESCipher(bytes(my_settings.key)).decrypt(username)
-            decrypted_password = AESCipher(bytes(my_settings.key)).decrypt(password)
+            decrypted_username = AES.AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AES.AESCipher(bytes(my_settings.key)).decrypt(password)
 
             USER = decrypted_username
             PASS = decrypted_password
 
             login_info = {
-                "action": "is_login_check",
-                "return_url": "https://www.daily-funding.com/",
                 "mb_id": USER,  # 아이디 지정
                 "mb_password": PASS  # 비밀번호 지정
             }
@@ -343,19 +360,42 @@ class DailyViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            cookie = session.cookies
-            print(cookie.get('PHPSESSID'))
-
-            try:
-                request.user.cookie_set.create(cookie_value=cookie.get('PHPSESSID'), company_id=company_id,
-                                               uid=request.user.id)
-            except:
-                request.user.cookie_set.update(cookie_value=cookie.get('PHPSESSID'))
+            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'wb') as f:
+                pickle.dump(session.cookies, f)
 
         # 마이페이지에 접근하기
         url_mypage = "https://www.daily-funding.com/mypage/investitems.php"
         res = session.get(url_mypage)
         res.raise_for_status()
+
+        if '로그인' in res.text:
+            username = request.user.register_set.get(company_id=company_id).username.strip()
+            password = request.user.register_set.get(company_id=company_id).user_password.strip()
+
+            decrypted_username = AES.AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AES.AESCipher(bytes(my_settings.key)).decrypt(password)
+
+            USER = decrypted_username
+            PASS = decrypted_password
+
+            login_info = {
+                "url": "https://www.daily-funding.com:443",
+                "mb_id": USER,  # 아이디 지정
+                "mb_password": PASS  # 비밀번호 지정
+            }
+
+            url_login = "https://www.daily-funding.com/bbs/login_check.php"
+            res = session.post(url_login, data=login_info)
+            res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'wb') as f:
+                pickle.dump(session.cookies, f)
+
+            # 마이페이지에 접근하기
+            url_mypage = "https://www.daily-funding.com/mypage/my_info.php"
+            res = requests.get(url_mypage, cookies=session.cookies)
+            res.raise_for_status()
 
         soup = BeautifulSoup(res.text, "html.parser")
 
@@ -388,7 +428,7 @@ class DailyViewSet(viewsets.GenericViewSet):
             except:
                 pass
 
-            query_set = request.user.summary_investing_set.filter(company_id=company_id)
-            serializer = InvestingiSerializer(query_set, many=True)
-            return JsonResponse(serializer.data, safe=False)
-            return Response(status=status.HTTP_201_CREATED)
+        query_set = request.user.summary_investing_set.filter(company_id=company_id)
+        serializer = InvestingiSerializer(query_set, many=True)
+        return JsonResponse(serializer.data, safe=False)
+        return Response(status=status.HTTP_201_CREATED)

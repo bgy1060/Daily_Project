@@ -1,7 +1,6 @@
 # Create your views here.
 from django.contrib.auth import get_user_model, logout
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import Count
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
@@ -10,21 +9,19 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 
-from company.models import Company
 from notice_board.models import *
 from . import serializers
-from .serializers import CompanyRegisterSerializer, CompanySerializer, UserInfoSerializer
+from .serializers import CompanyRegisterSerializer, CompanySerializer, UserInfoSerializer,PointSerializer
 from .utils import get_and_authenticate_user, create_user_account
 from django.utils import timezone
 
 import base64
-from Crypto import Random
-from Crypto.Cipher import AES
 import my_settings
 from drf_yasg import openapi
 
 import uuid
 import codecs
+import AES
 
 User = get_user_model()
 
@@ -197,6 +194,15 @@ class AuthViewSet(viewsets.GenericViewSet):
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 
+    @csrf_exempt
+    @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def my_point(self, request):
+        """ USER 포인트 사용 내역 출력 [token required]"""
+        query_set = Point_List.objects.filter(uid=request.user.id).order_by("-id")
+        serializer = PointSerializer(query_set, many=True)
+        return JsonResponse(serializer.data, safe=False)
+        return Response(status=status.HTTP_200_OK)
+
     def get_serializer_class(self):
         if not isinstance(self.serializer_classes, dict):
             raise ImproperlyConfigured("serializer_classes should be a dict mapping.")
@@ -204,28 +210,6 @@ class AuthViewSet(viewsets.GenericViewSet):
         if self.action in self.serializer_classes.keys():
             return self.serializer_classes[self.action]
         return super().get_serializer_class()
-
-
-BS = 16
-pad = lambda s: s + (BS - len(s.encode('utf-8')) % BS) * chr(BS - len(s.encode('utf-8')) % BS)
-unpad = lambda s: s[:-ord(s[len(s) - 1:])]
-
-
-class AESCipher:
-    def __init__(self, key):
-        self.key = key
-
-    def encrypt(self, raw):
-        raw = pad(raw)
-        iv = Random.new().read(AES.block_size)
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return base64.b64encode(iv + cipher.encrypt(raw.encode('utf-8')))
-
-    def decrypt(self, enc):
-        enc = base64.b64decode(enc)
-        iv = enc[:16]
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return unpad(cipher.decrypt(enc[16:]))
 
 
 class RegisterViewSet(viewsets.GenericViewSet):
@@ -263,8 +247,8 @@ class RegisterViewSet(viewsets.GenericViewSet):
             username = data['username']
             user_password = data['user_password']
 
-            encrypted_username = AESCipher(bytes(my_settings.key)).encrypt(username)
-            encrypted_user_password = AESCipher(bytes(my_settings.key)).encrypt(user_password)
+            encrypted_username = AES.AESCipher(bytes(my_settings.key)).encrypt(username)
+            encrypted_user_password = AES.AESCipher(bytes(my_settings.key)).encrypt(user_password)
 
             print(len(encrypted_username))
             print(encrypted_username)
@@ -383,6 +367,6 @@ class CodeViewSet(viewsets.GenericViewSet):
                                           action_id=point_action,
                                           detail_action='친구 초대',
                                           uid=uid)
-            data="Point payment completed!"
-            
+            data = "Point payment completed!"
+
         return Response(data=data, status=status.HTTP_201_CREATED)
