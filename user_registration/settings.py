@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'notice_board',
     'drf_yasg',
     'tera_funding',
+    'people_fund',
 
 ]
 

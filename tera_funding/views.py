@@ -1,7 +1,6 @@
 from django.shortcuts import render
 
 # Create your views here.
-from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
@@ -14,10 +13,10 @@ import my_settings
 from users.serializers import EmptySerializer
 from drf_yasg import openapi
 import requests, pickle
-from bs4 import BeautifulSoup
 from users.models import *
 import AES
 import re
+from tera_funding.login_info import login
 
 from daily_funding.serializers import *
 
@@ -51,26 +50,6 @@ class TeraViewSet(viewsets.GenericViewSet):
                 auth = pickle.load(f)
 
         except:
-            # 테라 펀딩 사이트 접근
-            company_url = "https://www.terafunding.com/"
-            res = requests.get(company_url)
-            res.raise_for_status()
-
-            # 로그인에 필요한 정보 가져오기
-            script = re.findall('<script type="text/javascript" src="\S+</script>', res.text)
-            src = re.findall('_nuxt/\S+.js', script[-1])
-
-            url = company_url + src[0]
-            res = requests.get(url)
-
-            data = re.findall('client_id:"\S+",client_secret:"\S+",grant_type:"\S+",scope:\S+"}', res.text)
-            data = data[0].split(',')
-
-            client_id = data[0].replace('client_id:', "").replace('"', "")
-            client_secret = data[1].replace('client_secret:', "").replace('"', "")
-            grant_type = data[2].replace('grant_type:', "").replace('"', "")
-            scope = data[3].replace('scope:', "").replace('"', "").replace("}", "")
-
             username = request.user.register_set.get(company_id=company_id).username.strip()
             password = request.user.register_set.get(company_id=company_id).user_password.strip()
 
@@ -81,12 +60,12 @@ class TeraViewSet(viewsets.GenericViewSet):
             PASS = decrypted_password
 
             login_info = {
-                'username': USER,
-                'password': PASS,
-                'client_id': client_id,
-                'client_secret': client_secret,
-                'grant_type': grant_type,
-                'scope': scope,
+                'username': USER.decode(),
+                'password': PASS.decode(),
+                'client_id': login()[0],
+                'client_secret': login()[1],
+                'grant_type': login()[2],
+                'scope': login()[3],
             }
 
             url_login = "https://api.terafunding.com/oauth/signin"
@@ -96,6 +75,8 @@ class TeraViewSet(viewsets.GenericViewSet):
             with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'wb') as f:
                 pickle.dump(res.json()['token_type']+" " + res.json()['access_token'], f)
 
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(company_id.id) + '_cookie.txt', 'rb') as f:
+                auth = pickle.load(f)
 
         request_headers = {
                 'authorization': auth
@@ -104,27 +85,7 @@ class TeraViewSet(viewsets.GenericViewSet):
         account_api = "https://api.terafunding.com/user/v1/investor"
         res = session.get(account_api, headers=request_headers)
 
-        if 'errorName' in res.text:
-            # 테라 펀딩 사이트 접근
-            company_url = "https://www.terafunding.com/"
-            res = requests.get(company_url)
-            res.raise_for_status()
-
-            # 로그인에 필요한 정보 가져오기
-            script = re.findall('<script type="text/javascript" src="\S+</script>', res.text)
-            src = re.findall('_nuxt/\S+.js', script[-1])
-
-            url = company_url + src[0]
-            res = requests.get(url)
-
-            data = re.findall('client_id:"\S+",client_secret:"\S+",grant_type:"\S+",scope:\S+"}', res.text)
-            data = data[0].split(',')
-
-            client_id = data[0].replace('client_id:', "").replace('"', "")
-            client_secret = data[1].replace('client_secret:', "").replace('"', "")
-            grant_type = data[2].replace('grant_type:', "").replace('"', "")
-            scope = data[3].replace('scope:', "").replace('"', "").replace("}", "")
-
+        if 'Access token expired' in res.text:
             username = request.user.register_set.get(company_id=company_id).username.strip()
             password = request.user.register_set.get(company_id=company_id).user_password.strip()
 
@@ -134,13 +95,16 @@ class TeraViewSet(viewsets.GenericViewSet):
             USER = decrypted_username
             PASS = decrypted_password
 
+            print(USER.decode())
+            print(PASS.decode())
+
             login_info = {
-                'username': USER,
-                'password': PASS,
-                'client_id': client_id,
-                'client_secret': client_secret,
-                'grant_type': grant_type,
-                'scope': scope,
+                'username': USER.decode(),
+                'password': PASS.decode(),
+                'client_id': login()[0],
+                'client_secret': login()[1],
+                'grant_type': login()[2],
+                'scope': login()[3],
             }
 
             url_login = "https://api.terafunding.com/oauth/signin"
@@ -150,6 +114,10 @@ class TeraViewSet(viewsets.GenericViewSet):
             with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(res.json()['token_type'] + " " + res.json()['access_token'], f)
+
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'rb') as f:
+                auth = pickle.load(f)
 
             request_headers = {
                 'authorization': auth
@@ -173,5 +141,125 @@ class TeraViewSet(viewsets.GenericViewSet):
 
         query_set = request.user.account_set.get(company_id=company_id)
         serializer = CompanyAccountSerializer(query_set)
+        return JsonResponse(serializer.data, safe=False)
+        return Response(status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'company_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='투자 요약 정보를 가져오고 싶은 회사 ID'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def balance(self, request):
+        """ USER 투자 요약 정보 가져오기 [token required] """
+        company_id = Company.objects.get(id=int(request.data['company_id']))
+
+        # 세션 시작하기
+        session = requests.session()
+
+        try:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(company_id.id) + '_cookie.txt', 'rb') as f:
+                auth = pickle.load(f)
+
+        except:
+            username = request.user.register_set.get(company_id=company_id).username.strip()
+            password = request.user.register_set.get(company_id=company_id).user_password.strip()
+
+            decrypted_username = AES.AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AES.AESCipher(bytes(my_settings.key)).decrypt(password)
+
+            USER = decrypted_username
+            PASS = decrypted_password
+
+            login_info = {
+                'username': USER.decode(),
+                'password': PASS.decode(),
+                'client_id': login()[0],
+                'client_secret': login()[1],
+                'grant_type': login()[2],
+                'scope': login()[3],
+            }
+
+            url_login = "https://api.terafunding.com/oauth/signin"
+            res = session.post(url_login, json=login_info)
+            res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'wb') as f:
+                pickle.dump(res.json()['token_type'] + " " + res.json()['access_token'], f)
+
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'rb') as f:
+                auth = pickle.load(f)
+
+        request_headers = {
+            'authorization': auth
+        }
+
+        balance_api = "https://api.terafunding.com/user/v1/dashboard"
+        res = session.get(balance_api, headers=request_headers)
+
+        if 'Access token expired' in res.text:
+            username = request.user.register_set.get(company_id=company_id).username.strip()
+            password = request.user.register_set.get(company_id=company_id).user_password.strip()
+
+            decrypted_username = AES.AESCipher(bytes(my_settings.key)).decrypt(username)
+            decrypted_password = AES.AESCipher(bytes(my_settings.key)).decrypt(password)
+
+            USER = decrypted_username
+            PASS = decrypted_password
+
+            print(USER.decode())
+            print(PASS.decode())
+
+            login_info = {
+                'username': USER.decode(),
+                'password': PASS.decode(),
+                'client_id': login()[0],
+                'client_secret': login()[1],
+                'grant_type': login()[2],
+                'scope': login()[3],
+            }
+
+            url_login = "https://api.terafunding.com/oauth/signin"
+            res = session.post(url_login, json=login_info)
+            res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'wb') as f:
+                pickle.dump(res.json()['token_type'] + " " + res.json()['access_token'], f)
+
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'rb') as f:
+                auth = pickle.load(f)
+
+            request_headers = {
+                'authorization': auth
+            }
+
+            balance_api = "https://api.terafunding.com/user/v1/dashboard"
+            res = session.get(balance_api, headers=request_headers)
+
+        total_investment = res.json()['investProfit']['totalAmt']
+        residual_investment_price = res.json()['investProfit']['grandTotalPreAmt']
+
+        num_product_url = "https://api.terafunding.com/funding/v1/user-invests/summary"
+        res = session.get(num_product_url, headers=request_headers)
+        number_of_investing_products = res.json()['map']['CREATED']['count']
+
+        try:
+            request.user.investing_balance_set.create(total_investment=total_investment,
+                                                      number_of_investing_products=number_of_investing_products,
+                                                      residual_investment_price=residual_investment_price,
+                                                      company_id=company_id, uid=request.user.id)
+        except:
+            request.user.investing_balance_set.update(total_investment=total_investment,
+                                                      number_of_investing_products=number_of_investing_products,
+                                                      residual_investment_price=residual_investment_price)
+
+        query_set = request.user.investing_balance_set.get(company_id=company_id)
+        serializer = CompanyBalanceSerializer(query_set)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_201_CREATED)

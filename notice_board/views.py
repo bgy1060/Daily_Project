@@ -390,6 +390,7 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
             - 이미 게시글에 좋아요 & 싫어요를 눌렀을 경우 "You have already liked/disliked it 메세지 전송"
         """
         try:
+
             post_id = NoticeBoard.objects.get(post_id=int(request.data['post_id']))
         except:
             message = {"The post has already been deleted and does not exist."}
