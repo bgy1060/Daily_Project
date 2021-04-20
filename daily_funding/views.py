@@ -10,7 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 import datetime
 
 import my_settings
-from .serializers import CompanyAccountSerializer, CompanyBalanceSerializer, CompanyWithdrawalSerializer, InvestingiSerializer
+from .serializers import CompanyAccountSerializer, CompanyBalanceSerializer, CompanyWithdrawalSerializer, \
+    InvestingiSerializer
 from users.serializers import EmptySerializer
 from drf_yasg import openapi
 import requests, pickle
@@ -43,7 +44,8 @@ class DailyViewSet(viewsets.GenericViewSet):
         session = requests.session()
 
         try:
-            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'rb') as f:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'rb') as f:
                 session.cookies.update(pickle.load(f))
 
         except:
@@ -65,7 +67,8 @@ class DailyViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'wb') as f:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
 
         # 마이페이지에 접근하기
@@ -110,14 +113,15 @@ class DailyViewSet(viewsets.GenericViewSet):
         account_number = data[2].text
         deposit = int(soup.select_one("ul.info_com span.s_tit em").text.replace('원', '').replace(',', ''))
 
-
         try:
             request.user.account_set.create(bank=bank, account_holder=account_holder, account_number=account_number,
                                             deposit=deposit, company_id=company_id, uid=request.user.id)
 
 
         except:
-            request.user.account_set.update(bank=bank, account_number=account_number, deposit=deposit)
+            request.user.account_set.filter(uid=request.user.id, company_id=company_id).update(bank=bank,
+                                                                                               account_number=account_number,
+                                                                                               deposit=deposit)
 
         query_set = request.user.account_set.get(company_id=company_id)
         serializer = CompanyAccountSerializer(query_set)
@@ -140,7 +144,8 @@ class DailyViewSet(viewsets.GenericViewSet):
         session = requests.session()
 
         try:
-            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'rb') as f:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'rb') as f:
                 session.cookies.update(pickle.load(f))
 
         except:
@@ -164,7 +169,8 @@ class DailyViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'wb') as f:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
 
         # 마이페이지에 접근하기
@@ -213,9 +219,10 @@ class DailyViewSet(viewsets.GenericViewSet):
                                                       residual_investment_price=residual_investment_price,
                                                       company_id=company_id, uid=request.user.id)
         except:
-            request.user.investing_balance_set.update(total_investment=total_investment,
-                                                      number_of_investing_products=number_of_investing_products,
-                                                      residual_investment_price=residual_investment_price)
+            request.user.investing_balance_set.filter(uid=request.user.id, company_id=company_id).update(
+                total_investment=total_investment,
+                number_of_investing_products=number_of_investing_products,
+                residual_investment_price=residual_investment_price)
 
         query_set = request.user.investing_balance_set.get(company_id=company_id)
         serializer = CompanyBalanceSerializer(query_set)
@@ -238,7 +245,8 @@ class DailyViewSet(viewsets.GenericViewSet):
         session = requests.session()
 
         try:
-            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'rb') as f:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'rb') as f:
                 session.cookies.update(pickle.load(f))
 
         except:
@@ -261,7 +269,8 @@ class DailyViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'wb') as f:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
 
         # 마이페이지에 접근하기
@@ -307,12 +316,14 @@ class DailyViewSet(viewsets.GenericViewSet):
         for i in range(len(trading_time)):
             try:
                 request.user.deposit_withdrawal_set.create(transaction_amount=int(transaction_amount[i].
-                                                                              text.replace('원', '').replace(',', '')),
-                                                       remaining_amount=int(remaining_amount[i].
-                                                                            text.replace('원', '').replace(',', '')),
-                                                       trading_time=datetime.datetime.strptime(str(trading_time[i].text),
-                                                                                               '%Y-%m-%d %H:%M:%S'),
-                                                       company_id=company_id, uid=request.user.id)
+                                                                                  text.replace('원', '').replace(',',
+                                                                                                                '')),
+                                                           remaining_amount=int(remaining_amount[i].
+                                                                                text.replace('원', '').replace(',', '')),
+                                                           trading_time=datetime.datetime.strptime(
+                                                               str(trading_time[i].text),
+                                                               '%Y-%m-%d %H:%M:%S'),
+                                                           company_id=company_id, uid=request.user.id)
             except:
                 pass
 
@@ -337,7 +348,8 @@ class DailyViewSet(viewsets.GenericViewSet):
         session = requests.session()
 
         try:
-            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'rb') as f:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'rb') as f:
                 session.cookies.update(pickle.load(f))
 
         except:
@@ -360,7 +372,8 @@ class DailyViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'wb') as f:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
 
         # 마이페이지에 접근하기

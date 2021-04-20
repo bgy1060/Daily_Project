@@ -226,7 +226,7 @@ class AuthViewSet(viewsets.GenericViewSet):
         result_page = paginator.paginate_queryset(query_set, request)
         serializer = PointListSerializer(result_page, many=True)
         print(datetime.strptime(request.data['start'], "%Y-%m-%d").year)
-        return JsonResponse(serializer.data, safe=False)
+        return paginator.get_paginated_response(serializer.data)
         return Response(status=status.HTTP_200_OK)
 
     @csrf_exempt

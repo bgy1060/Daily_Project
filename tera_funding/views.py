@@ -46,7 +46,8 @@ class TeraViewSet(viewsets.GenericViewSet):
         session = requests.session()
 
         try:
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(company_id.id) + '_cookie.txt', 'rb') as f:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'rb') as f:
                 auth = pickle.load(f)
 
         except:
@@ -72,14 +73,16 @@ class TeraViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, json=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/'+str(request.user.id)+'_'+str(company_id.id)+'_cookie.txt', 'wb') as f:
-                pickle.dump(res.json()['token_type']+" " + res.json()['access_token'], f)
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'wb') as f:
+                pickle.dump(res.json()['token_type'] + " " + res.json()['access_token'], f)
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(company_id.id) + '_cookie.txt', 'rb') as f:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'rb') as f:
                 auth = pickle.load(f)
 
         request_headers = {
-                'authorization': auth
+            'authorization': auth
         }
 
         account_api = "https://api.terafunding.com/user/v1/investor"
@@ -94,9 +97,6 @@ class TeraViewSet(viewsets.GenericViewSet):
 
             USER = decrypted_username
             PASS = decrypted_password
-
-            print(USER.decode())
-            print(PASS.decode())
 
             login_info = {
                 'username': USER.decode(),
@@ -137,7 +137,9 @@ class TeraViewSet(viewsets.GenericViewSet):
 
 
         except:
-            request.user.account_set.update(bank=bank, account_number=account_number, deposit=deposit)
+            request.user.account_set.filter(uid=request.user.id, company_id=company_id).update(bank=bank,
+                                                                                               account_number=account_number,
+                                                                                               deposit=deposit)
 
         query_set = request.user.account_set.get(company_id=company_id)
         serializer = CompanyAccountSerializer(query_set)
@@ -160,7 +162,8 @@ class TeraViewSet(viewsets.GenericViewSet):
         session = requests.session()
 
         try:
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(company_id.id) + '_cookie.txt', 'rb') as f:
+            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+                    company_id.id) + '_cookie.txt', 'rb') as f:
                 auth = pickle.load(f)
 
         except:
@@ -211,9 +214,6 @@ class TeraViewSet(viewsets.GenericViewSet):
             USER = decrypted_username
             PASS = decrypted_password
 
-            print(USER.decode())
-            print(PASS.decode())
-
             login_info = {
                 'username': USER.decode(),
                 'password': PASS.decode(),
@@ -255,9 +255,10 @@ class TeraViewSet(viewsets.GenericViewSet):
                                                       residual_investment_price=residual_investment_price,
                                                       company_id=company_id, uid=request.user.id)
         except:
-            request.user.investing_balance_set.update(total_investment=total_investment,
-                                                      number_of_investing_products=number_of_investing_products,
-                                                      residual_investment_price=residual_investment_price)
+            request.user.investing_balance_set.filter(uid=request.user.id, company_id=company_id).update(
+                total_investment=total_investment,
+                number_of_investing_products=number_of_investing_products,
+                residual_investment_price=residual_investment_price)
 
         query_set = request.user.investing_balance_set.get(company_id=company_id)
         serializer = CompanyBalanceSerializer(query_set)
