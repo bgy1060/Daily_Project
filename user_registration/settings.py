@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     'tera_funding',
     'people_fund',
     'honest_fund',
+    'profit',
 
 ]
 

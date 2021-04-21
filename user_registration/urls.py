@@ -20,6 +20,7 @@ from rest_framework import routers
 from hello_funding.views import HelloViewSet
 from honest_fund.views import HonestViewSet
 from people_fund.views import PeopleViewSet
+from profit.views import ProfitViewSet
 from tera_funding.views import TeraViewSet
 from users.views import *
 from daily_funding.views import *
@@ -49,7 +50,7 @@ router.register('api/join', CodeViewSet, basename='join_code')
 router.register('api/tera', TeraViewSet, basename='tera_funding')
 router.register('api/people', PeopleViewSet, basename='people_fund')
 router.register('api/honest', HonestViewSet, basename='honest_fund')
-router.register('api/hello', HelloViewSet, basename='hello_funding')
+router.register('api/profit', ProfitViewSet, basename='profit')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),

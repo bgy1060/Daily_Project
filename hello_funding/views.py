@@ -68,14 +68,12 @@ class HelloViewSet(viewsets.GenericViewSet):
             url_login = "https://www.hellofunding.co.kr/bbs/login_check.php"
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
-            print(res.status_code)
 
             with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
 
         # 마이페이지에 접근하기
-
         url_mypage = "https://www.hellofunding.co.kr/deposit/deposit.php"
         res = requests.get(url_mypage, cookies=session.cookies)
         res.raise_for_status()
