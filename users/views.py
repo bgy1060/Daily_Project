@@ -74,8 +74,6 @@ class AuthViewSet(viewsets.GenericViewSet):
                                               detail_action='로그인',
                                               uid=uid)
 
-                print(point_action.point_value)
-
         return Response(data=data, status=status.HTTP_200_OK)
 
     @csrf_exempt
@@ -225,7 +223,6 @@ class AuthViewSet(viewsets.GenericViewSet):
                                               date__day__lte=end.day).order_by("-id")
         result_page = paginator.paginate_queryset(query_set, request)
         serializer = PointListSerializer(result_page, many=True)
-        print(datetime.strptime(request.data['start'], "%Y-%m-%d").year)
         return paginator.get_paginated_response(serializer.data)
         return Response(status=status.HTTP_200_OK)
 
@@ -275,7 +272,6 @@ class RegisterViewSet(viewsets.GenericViewSet):
     def company_register(self, request):
         """ 회사 등록 : 사용자가 가입한 P2P 사이트의 id와 pw를 입력하여 가입 회사 등록 [token required]"""
         data = request.data
-        print(data)
         try:
             company_id = Company.objects.get(id=int(data['company_id']))
 
@@ -284,9 +280,6 @@ class RegisterViewSet(viewsets.GenericViewSet):
 
             encrypted_username = AES.AESCipher(bytes(my_settings.key)).encrypt(username)
             encrypted_user_password = AES.AESCipher(bytes(my_settings.key)).encrypt(user_password)
-
-            print(len(encrypted_username))
-            print(encrypted_username)
 
             '''
             #------  decryption test  -------
@@ -340,7 +333,6 @@ class RegisterViewSet(viewsets.GenericViewSet):
     def registered_company(self, request):
         """ 사용자가 등록한 회사 목록 출력 [token required] """
         query_set = request.user.register_set.all()
-        print(query_set)
         serializer = CompanyRegisterSerializer(query_set, many=True)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)

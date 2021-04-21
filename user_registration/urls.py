@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import path, re_path
 from rest_framework import routers
 
+from hello_funding.views import HelloViewSet
+from honest_fund.views import HonestViewSet
 from people_fund.views import PeopleViewSet
 from tera_funding.views import TeraViewSet
 from users.views import *
@@ -46,6 +48,8 @@ router.register('api/notice', NoticeBoardViewSet, basename='notice_board')
 router.register('api/join', CodeViewSet, basename='join_code')
 router.register('api/tera', TeraViewSet, basename='tera_funding')
 router.register('api/people', PeopleViewSet, basename='people_fund')
+router.register('api/honest', HonestViewSet, basename='honest_fund')
+router.register('api/hello', HelloViewSet, basename='hello_funding')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),
