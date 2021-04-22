@@ -109,7 +109,7 @@ class HelloViewSet(viewsets.GenericViewSet):
         soup = BeautifulSoup(res.text, "html.parser")
         data = soup.select('div.boxArea td span')
 
-        account_holder = data[1].text.split(" ")[4].replace("(헬로펀딩)", "")
+        account_holder = data[1].text.split(" ")[4]
         bank = data[1].text.split(" ")[0]
         account_number = data[1].text.split(" ")[2]
         deposit = soup.select_one("span#realtime_point1").text

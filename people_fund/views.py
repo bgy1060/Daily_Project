@@ -110,7 +110,7 @@ class PeopleViewSet(viewsets.GenericViewSet):
             res = requests.get(url_mypage, cookies=session.cookies)
             res.raise_for_status()
 
-        account_holder = res.json()['data']['showcase']['accountVirtualHolder'].replace('(담보채권)', '').strip()
+        account_holder = res.json()['data']['showcase']['accountVirtualHolder'].strip()
         bank = res.json()['data']['showcase']['accountVirtualBankName']
         account_number = res.json()['data']['showcase']['accountVirtualNum'].replace("-", '')
         deposit = res.json()['data']['showcase']['holdMoney']

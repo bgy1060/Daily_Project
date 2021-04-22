@@ -86,6 +86,8 @@ INSTALLED_APPS = [
     'honest_fund',
     'profit',
     'lendit',
+    'theasset',
+
 
 ]
 

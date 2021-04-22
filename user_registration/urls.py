@@ -23,6 +23,7 @@ from lendit.views import LenditViewSet
 from people_fund.views import PeopleViewSet
 from profit.views import ProfitViewSet
 from tera_funding.views import TeraViewSet
+from theasset.views import TheassetViewSet
 from users.views import *
 from daily_funding.views import *
 from notice_board.views import *
@@ -50,9 +51,11 @@ router.register('api/notice', NoticeBoardViewSet, basename='notice_board')
 router.register('api/join', CodeViewSet, basename='join_code')
 router.register('api/tera', TeraViewSet, basename='tera_funding')
 router.register('api/people', PeopleViewSet, basename='people_fund')
+router.register('api/hello', HelloViewSet, basename='hello_funding')
 router.register('api/honest', HonestViewSet, basename='honest_fund')
 router.register('api/profit', ProfitViewSet, basename='profit')
 router.register('api/lendit', LenditViewSet, basename='lendit')
+router.register('api/theasset', TheassetViewSet, basename='theasset')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),
