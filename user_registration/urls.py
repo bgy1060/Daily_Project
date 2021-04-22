@@ -20,6 +20,7 @@ from rest_framework import routers
 from hello_funding.views import HelloViewSet
 from honest_fund.views import HonestViewSet
 from lendit.views import LenditViewSet
+from loanpoint.views import LoanPointViewSet
 from people_fund.views import PeopleViewSet
 from profit.views import ProfitViewSet
 from tera_funding.views import TeraViewSet
@@ -56,6 +57,7 @@ router.register('api/honest', HonestViewSet, basename='honest_fund')
 router.register('api/profit', ProfitViewSet, basename='profit')
 router.register('api/lendit', LenditViewSet, basename='lendit')
 router.register('api/theasset', TheassetViewSet, basename='theasset')
+router.register('api/loanpoint', LoanPointViewSet, basename='loanpoint')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),

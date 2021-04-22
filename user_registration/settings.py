@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     'profit',
     'lendit',
     'theasset',
+    'loanpoint',
 
 
 ]

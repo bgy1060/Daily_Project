@@ -104,6 +104,7 @@ class AuthViewSet(viewsets.GenericViewSet):
 
         try:
             if request.data['code']:
+                print(request.data['code'])
                 try:
                     uid = CustomUser.objects.get(code=request.data['code'])
                 except:
