@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     'people_fund',
     'honest_fund',
     'profit',
+    'lendit',
 
 ]
 
