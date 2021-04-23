@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, re_path
 from rest_framework import routers
 
+from bf_fund.views import BFViewSet
 from hello_funding.views import HelloViewSet
 from honest_fund.views import HonestViewSet
 from lendit.views import LenditViewSet
@@ -63,6 +64,7 @@ router.register('api/theasset', TheassetViewSet, basename='theasset')
 router.register('api/loanpoint', LoanPointViewSet, basename='loanpoint')
 router.register('api/niceabc', NiceabcViewSet, basename='niceabc')
 router.register('api/v', VFundingViewSet, basename='v_funding')
+router.register('api/bf', BFViewSet, basename='bf_fund')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),
