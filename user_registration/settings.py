@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     'niceabc',
     'v_funding',
     'bf_fund',
+    'miracle_funding',
 
 
 ]

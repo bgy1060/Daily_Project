@@ -22,6 +22,7 @@ from hello_funding.views import HelloViewSet
 from honest_fund.views import HonestViewSet
 from lendit.views import LenditViewSet
 from loanpoint.views import LoanPointViewSet
+from miracle_funding.views import MiracleViewSet
 from niceabc.views import NiceabcViewSet
 from people_fund.views import PeopleViewSet
 from profit.views import ProfitViewSet
@@ -65,6 +66,7 @@ router.register('api/loanpoint', LoanPointViewSet, basename='loanpoint')
 router.register('api/niceabc', NiceabcViewSet, basename='niceabc')
 router.register('api/v', VFundingViewSet, basename='v_funding')
 router.register('api/bf', BFViewSet, basename='bf_fund')
+router.register('api/miracle', MiracleViewSet, basename='miracle_funding')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),
