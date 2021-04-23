@@ -104,11 +104,12 @@ class AuthViewSet(viewsets.GenericViewSet):
 
         try:
             if request.data['code']:
-                print(request.data['code'])
                 try:
                     uid = CustomUser.objects.get(code=request.data['code'])
                 except:
                     return Response(data={"Invitation Code is invalid!"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(data={"회원가입 완료!"}, status=status.HTTP_201_CREATED)
             point_action = Point_action.objects.get(action='친구 가입')
 
             if Point_List.objects.filter(uid=uid, date__year=timezone.now().year,
@@ -125,6 +126,7 @@ class AuthViewSet(viewsets.GenericViewSet):
                                               action_id=point_action,
                                               detail_action='초대 친구 가입 축하 포인트',
                                               uid=uid)
+
                 except:
                     Point_List.objects.create(point=point_action.point_value,
                                               total_point=point_action.point_value,
@@ -132,6 +134,7 @@ class AuthViewSet(viewsets.GenericViewSet):
                                               action_id=point_action,
                                               detail_action='초대 친구 가입 축하 포인트',
                                               uid=uid)
+
 
             point_action = Point_action.objects.get(action='친구 가입')
             uid = CustomUser.objects.get(id=data['id'])
