@@ -33,6 +33,8 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from v_funding.views import VFundingViewSet
+
 schema_view = get_schema_view(
     openapi.Info(title="Snippets API",
                  default_version='v1',
@@ -60,6 +62,7 @@ router.register('api/lendit', LenditViewSet, basename='lendit')
 router.register('api/theasset', TheassetViewSet, basename='theasset')
 router.register('api/loanpoint', LoanPointViewSet, basename='loanpoint')
 router.register('api/niceabc', NiceabcViewSet, basename='niceabc')
+router.register('api/v', VFundingViewSet, basename='v_funding')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),

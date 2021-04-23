@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'theasset',
     'loanpoint',
     'niceabc',
+    'v_funding',
 
 
 ]

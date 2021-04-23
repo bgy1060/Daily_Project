@@ -1,7 +1,6 @@
 from django.shortcuts import render
 
 # Create your views here.
-# Create your views here.
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
