@@ -17,7 +17,7 @@ class PostListSerializer(serializers.ModelSerializer):
         model = NoticeBoard
         fields = ('post_id','user','title', 'date', 'views', 'like', 'dislike', 'category_id', 'uid')
 
-    def get_user(self,obj: User):
+    def get_user(self, obj: User):
         return obj.uid.email
 
 
@@ -42,6 +42,7 @@ class DetailPostSerializer(serializers.ModelSerializer):
             return True
         else:
             return False
+
     def get_like_dislike(self, obj: User):
         return self.context[2]
 

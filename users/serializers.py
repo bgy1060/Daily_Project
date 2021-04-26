@@ -89,6 +89,7 @@ class CompanyRegisterSerializer(serializers.ModelSerializer):
         model = Register
         fields = (
             'uid',
+            'company_id',
             'company_name',
             'nickname'
         )

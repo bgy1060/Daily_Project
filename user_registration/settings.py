@@ -92,6 +92,8 @@ INSTALLED_APPS = [
     'v_funding',
     'bf_fund',
     'miracle_funding',
+    'mosaic_funding',
+    'fun_funding',
 
 
 ]

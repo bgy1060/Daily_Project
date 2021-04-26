@@ -144,7 +144,7 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
             like_dislike = -1
         else:
             try:
-                n=NoticeBoardLike.objects.get(post_id=post_id, uid=request.user.id)
+                n = NoticeBoardLike.objects.get(post_id=post_id, uid=request.user.id)
                 is_like_dislke = True
                 editable = request.user.id
                 like_dislike = int(n.like_dislike)
