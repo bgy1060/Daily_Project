@@ -62,7 +62,7 @@ class CommentListSerializer(serializers.ModelSerializer):
 
     def get_is_like_dislike(self, obj: Comment):
         try:
-            obj.commentlike_set.get(uid=obj.uid)
+            obj.commentlike_set.get(uid=self.context)
             return True
         except:
             return False
@@ -73,9 +73,9 @@ class CommentListSerializer(serializers.ModelSerializer):
         else:
             return False
 
-    def get_like_dislike(self, obj: Comment):
+    def get_like_dislike(self, obj: CommentLike):
         try:
-            return int(obj.commentlike_set.get(uid=obj.uid).like_dislike)
+            return int(obj.commentlike_set.get(uid=self.context).like_dislike)
         except:
             return-1
 
