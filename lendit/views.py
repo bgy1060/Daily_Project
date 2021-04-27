@@ -36,6 +36,8 @@ class LenditViewSet(viewsets.GenericViewSet):
         type=openapi.TYPE_OBJECT,
         properties={
             'company_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='계좌 정보를 가져오고 싶은 회사 ID'),
+            'refresh': openapi.Schema(type=openapi.TYPE_INTEGER, description='값이 1이면 크롤링 해서 데이터 가져오기, 값이 0이면 DB에 저장되어 '
+                                                                             '있는 값 가져오기'),
 
         }))
     @csrf_exempt
@@ -45,6 +47,12 @@ class LenditViewSet(viewsets.GenericViewSet):
         company_id = Company.objects.get(id=int(request.data['company_id']))
         # 세션 시작하기
         session = requests.session()
+
+        if request.data['refresh'] == 0:
+            query_set = request.user.account_set.get(company_id=company_id)
+            serializer = CompanyAccountSerializer(query_set)
+            return JsonResponse(serializer.data, safe=False)
+            return Response(status=status.HTTP_200_OK)
 
         try:
             with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
@@ -134,6 +142,8 @@ class LenditViewSet(viewsets.GenericViewSet):
         type=openapi.TYPE_OBJECT,
         properties={
             'company_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='투자 요약 정보를 가져오고 싶은 회사 ID'),
+            'refresh': openapi.Schema(type=openapi.TYPE_INTEGER, description='값이 1이면 크롤링 해서 데이터 가져오기, 값이 0이면 DB에 저장되어 '
+                                                                             '있는 값 가져오기'),
 
         }))
     @csrf_exempt
@@ -144,6 +154,12 @@ class LenditViewSet(viewsets.GenericViewSet):
 
         # 세션 시작하기
         session = requests.session()
+
+        if request.data['refresh'] == 0:
+            query_set = request.user.investing_balance_set.get(company_id=company_id)
+            serializer = CompanyBalanceSerializer(query_set)
+            return JsonResponse(serializer.data, safe=False)
+            return Response(status=status.HTTP_200_OK)
 
         try:
             with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
@@ -210,7 +226,7 @@ class LenditViewSet(viewsets.GenericViewSet):
             res.raise_for_status()
             data = res.json()
 
-        total_investment = int(data['result']['accumPrincipal'])
+        total_investment = int(data['result']['principal'])
         number_of_investing_products = data['result']['totalNoteCnt']
         residual_investment_price = data['result']['netRemainPrincipal']
 
