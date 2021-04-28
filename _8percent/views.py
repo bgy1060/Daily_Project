@@ -1,3 +1,5 @@
+import re
+
 from django.shortcuts import render
 
 # Create your views here.
@@ -25,7 +27,7 @@ import AES
 User = get_user_model()
 
 
-class FunViewSet(viewsets.GenericViewSet):
+class _8PercentViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny, ]
     serializer_class = EmptySerializer
     serializer_classes = {
@@ -69,25 +71,34 @@ class FunViewSet(viewsets.GenericViewSet):
             USER = decrypted_username
             PASS = decrypted_password
 
+            # csrf token 가져오기
+            csrf_url = "https://8percent.kr/user/login/"
+            res = session.get(csrf_url)
+
+            script = re.findall('<input type="hidden" name="csrfmiddlewaretoken" value="\S+">', res.text)
+            src = re.findall('"\S+"', script[0])
+            csrfmiddlewaretoken = src[-1].replace('"', "")
+
             login_info = {
-                "loginId": USER.decode(),  # 아이디 지정
-                "password": PASS.decode()  # 비밀번호 지정
+                "email": USER,  # 아이디 지정
+                "password": PASS,  # 비밀번호 지정
+                "csrfmiddlewaretoken": csrfmiddlewaretoken
             }
 
-            url_login = "https://www.funfunding.co.kr/user/signin"
-            res = session.post(url_login, json=login_info)
+            url_login = "https://8percent.kr/user/login/"
+            res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
             with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
+        try:
+            # 마이페이지에 접근하기
+            url_mypage = "https://8percent.kr/api/user/vacs/"
+            res = requests.get(url_mypage, cookies=session.cookies)
+            res.raise_for_status()
 
-        # 마이페이지에 접근하기
-        url_mypage = "https://www.funfunding.co.kr/user/account"
-        res = requests.get(url_mypage, cookies=session.cookies)
-        res.raise_for_status()
-
-        if '로그인' in res.text:
+        except:
             username = request.user.register_set.get(company_id=company_id).username.strip()
             password = request.user.register_set.get(company_id=company_id).user_password.strip()
 
@@ -97,13 +108,21 @@ class FunViewSet(viewsets.GenericViewSet):
             USER = decrypted_username
             PASS = decrypted_password
 
+            csrf_url = "https://8percent.kr/user/login/"
+            res = session.get(csrf_url)
+
+            script = re.findall('<input type="hidden" name="csrfmiddlewaretoken" value="\S+">', res.text)
+            src = re.findall('"\S+"', script[0])
+            csrfmiddlewaretoken = src[-1].replace('"', "")
+
             login_info = {
-                "loginId": USER.decode(),  # 아이디 지정
-                "password": PASS.decode()  # 비밀번호 지정
+                "email": USER,  # 아이디 지정
+                "password": PASS,  # 비밀번호 지정
+                "csrfmiddlewaretoken": csrfmiddlewaretoken
             }
 
-            url_login = "https://www.funfunding.co.kr/user/signin"
-            res = session.post(url_login, json=login_info)
+            url_login = "https://8percent.kr/user/login/"
+            res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
             with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
@@ -111,17 +130,14 @@ class FunViewSet(viewsets.GenericViewSet):
                 pickle.dump(session.cookies, f)
 
             # 마이페이지에 접근하기
-            url_mypage = "https://www.funfunding.co.kr/user/account"
+            url_mypage = "https://8percent.kr/api/user/vacs/"
             res = requests.get(url_mypage, cookies=session.cookies)
             res.raise_for_status()
 
-        soup = BeautifulSoup(res.text, "html.parser")
-        data = soup.select('p.account-contents span.pull-right')
-
-        account_holder = data[3].text
-        bank = data[0].text
-        account_number = data[1].text
-        deposit = data[2].text.replace("원", "")
+        account_holder = res.json()['accountName']
+        bank = res.json()['bankName']
+        account_number = res.json()['bankAccount']
+        deposit = int(res.json()['balance'])
 
         try:
             request.user.account_set.create(bank=bank, account_holder=account_holder, account_number=account_number,
@@ -176,25 +192,35 @@ class FunViewSet(viewsets.GenericViewSet):
             USER = decrypted_username
             PASS = decrypted_password
 
+            # csrf token 가져오기
+            csrf_url = "https://8percent.kr/user/login/"
+            res = session.get(csrf_url)
+
+            script = re.findall('<input type="hidden" name="csrfmiddlewaretoken" value="\S+">', res.text)
+            src = re.findall('"\S+"', script[0])
+            csrfmiddlewaretoken = src[-1].replace('"', "")
+
             login_info = {
-                "loginId": USER.decode(),  # 아이디 지정
-                "password": PASS.decode()  # 비밀번호 지정
+                "email": USER,  # 아이디 지정
+                "password": PASS,  # 비밀번호 지정
+                "csrfmiddlewaretoken": csrfmiddlewaretoken
             }
 
-            url_login = "https://www.funfunding.co.kr/user/signin"
-            res = session.post(url_login, json=login_info)
+            url_login = "https://8percent.kr/user/login/"
+            res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
             with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
 
-        # 마이페이지에 접근하기
-        url_mypage = "https://www.funfunding.co.kr/user/product"
-        res = session.get(url_mypage, cookies=session.cookies)
-        res.raise_for_status()
+        try:
+            # total_investment를 가져올 api
+            url_total = "https://8percent.kr/api/investor/investment-status/"
+            res = requests.get(url_total, cookies=session.cookies)
+            res.raise_for_status()
 
-        if '로그인' in res.text:
+        except:
             username = request.user.register_set.get(company_id=company_id).username.strip()
             password = request.user.register_set.get(company_id=company_id).user_password.strip()
 
@@ -204,29 +230,44 @@ class FunViewSet(viewsets.GenericViewSet):
             USER = decrypted_username
             PASS = decrypted_password
 
+            csrf_url = "https://8percent.kr/user/login/"
+            res = session.get(csrf_url)
+
+            script = re.findall('<input type="hidden" name="csrfmiddlewaretoken" value="\S+">', res.text)
+            src = re.findall('"\S+"', script[0])
+            csrfmiddlewaretoken = src[-1].replace('"', "")
+
             login_info = {
-                "loginId": USER.decode(),  # 아이디 지정
-                "password": PASS.decode()  # 비밀번호 지정
+                "email": USER,  # 아이디 지정
+                "password": PASS,  # 비밀번호 지정
+                "csrfmiddlewaretoken": csrfmiddlewaretoken
             }
 
-            url_login = "https://www.funfunding.co.kr/user/signin"
-            res = session.post(url_login, json=login_info)
+            url_login = "https://8percent.kr/user/login/"
+            res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
             with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
 
-            # 마이페이지에 접근하기
-            url_mypage = "https://www.funfunding.co.kr/user/product"
-            res = requests.get(url_mypage, cookies=session.cookies)
+            # total_investment를 가져올 api
+            url_total = "https://8percent.kr/api/investor/investment-status/"
+            res = requests.get(url_total, cookies=session.cookies)
             res.raise_for_status()
 
-        soup = BeautifulSoup(res.text, "html.parser")
+        total_investment = res.json()['investmentStatus']['invest'] + res.json()['investmentStatus']['complete'] + \
+                           res.json()['investmentStatus']['loss']
+        residual_investment_price = res.json()['investmentStatus']['invest']
 
-        total_investment = int(soup.select("div.dashboard li p.content")[1].text.strip().replace('만원', '').replace(',', ''))*10000
-        number_of_investing_products = soup.select("span.content.pull-right")[0].text.strip().replace('건', '')
-        residual_investment_price = int(soup.select("div.dashboard li p.content")[3].text.strip().replace('만원', '').replace(',', ''))*10000
+        url_num_investing = "https://8percent.kr/api/investor/investment-portfolio/"
+        res = requests.get(url_num_investing, cookies=session.cookies)
+
+        number_of_investing_products = res.json()["investmentPortfolio"]['grade']['a']['count'] + \
+                                       res.json()["investmentPortfolio"]['grade']['b']['count'] + \
+                                       res.json()["investmentPortfolio"]['grade']['c']['count'] + \
+                                       res.json()["investmentPortfolio"]['grade']['d']['count'] + \
+                                       res.json()["investmentPortfolio"]['grade']['extra']['count']
 
         try:
             request.user.investing_balance_set.create(total_investment=total_investment,
@@ -243,5 +284,3 @@ class FunViewSet(viewsets.GenericViewSet):
         serializer = CompanyBalanceSerializer(query_set)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_201_CREATED)
-
-
