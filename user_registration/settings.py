@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     'mosaic_funding',
     'fun_funding',
     '_8percent',
+    '_90days',
 
 
 ]

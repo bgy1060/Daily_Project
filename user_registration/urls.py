@@ -18,6 +18,7 @@ from django.urls import path, re_path
 from rest_framework import routers
 
 from _8percent.views import _8PercentViewSet
+from _90days.views import _90DaysViewSet
 from bf_fund.views import BFViewSet
 from fun_funding.views import FunViewSet
 from hello_funding.views import HelloViewSet
@@ -73,6 +74,7 @@ router.register('api/miracle', MiracleViewSet, basename='miracle_funding')
 router.register('api/mosaic', MosaicViewSet, basename='mosaic_funding')
 router.register('api/fun', FunViewSet, basename='fun_funding')
 router.register('api/8percent', _8PercentViewSet, basename='8percent')
+router.register('api/90days', _90DaysViewSet, basename='90days')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),
