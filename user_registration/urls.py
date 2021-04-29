@@ -32,6 +32,7 @@ from people_fund.views import PeopleViewSet
 from profit.views import ProfitViewSet
 from tera_funding.views import TeraViewSet
 from theasset.views import TheassetViewSet
+from together_funding.views import TogetherViewSet
 from users.views import *
 from daily_funding.views import *
 from notice_board.views import *
@@ -75,6 +76,7 @@ router.register('api/mosaic', MosaicViewSet, basename='mosaic_funding')
 router.register('api/fun', FunViewSet, basename='fun_funding')
 router.register('api/8percent', _8PercentViewSet, basename='8percent')
 router.register('api/90days', _90DaysViewSet, basename='90days')
+router.register('api/together', TogetherViewSet, basename='together_funding')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),
