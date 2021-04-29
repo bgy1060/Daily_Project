@@ -191,7 +191,7 @@ class HelloViewSet(viewsets.GenericViewSet):
 
         # 마이페이지에 접근하기
         url_mypage = "https://www.hellofunding.co.kr/deposit/deposit.php"
-        res = session.get(url_mypage)
+        res = session.get(url_mypage, cookies=session.cookies)
         res.raise_for_status()
 
         if '이미 회원이십니다' not in res.text:

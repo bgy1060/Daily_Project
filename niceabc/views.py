@@ -190,7 +190,7 @@ class NiceabcViewSet(viewsets.GenericViewSet):
         try:
             # 마이페이지에 접근하기
             url_mypage = "https://www.niceabc.co.kr/common/search/invest/status"
-            res = session.get(url_mypage)
+            res = session.get(url_mypage, cookies=session.cookies)
             res.raise_for_status()
             data = res.json()
 

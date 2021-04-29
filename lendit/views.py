@@ -85,7 +85,7 @@ class LenditViewSet(viewsets.GenericViewSet):
 
         # 마이페이지에 접근하기
         url_mypage = "https://invest.lendit.co.kr/api/me"
-        res = requests.get(url_mypage)
+        res = requests.get(url_mypage, cookies=session.cookies)
         res.raise_for_status()
 
         try:
@@ -192,7 +192,7 @@ class LenditViewSet(viewsets.GenericViewSet):
 
         # 마이페이지에 접근하기
         url_mypage = "https://invest.lendit.co.kr/api/mypage/portfolios/summary"
-        res = session.get(url_mypage)
+        res = session.get(url_mypage, cookies=session.cookies)
         res.raise_for_status()
 
         try:

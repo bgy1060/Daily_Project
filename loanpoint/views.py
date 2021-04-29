@@ -193,7 +193,7 @@ class LoanPointViewSet(viewsets.GenericViewSet):
 
         # 마이페이지에 접근하기
         url_mypage = "https://www.loanpoint.co.kr/mypage/my_info.php"
-        res = session.get(url_mypage)
+        res = session.get(url_mypage, cookies=session.cookies)
         res.raise_for_status()
 
         if '로그인' in res.text:
