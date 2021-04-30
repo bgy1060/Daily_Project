@@ -30,3 +30,11 @@ class Deposit_Withdrawal(models.Model):
     class Meta:
         db_table = 'deposit_withdrawal'
         unique_together = ['company_id', 'trading_time','remaining_amount']
+
+
+class Bank(models.Model):
+    bank = models.CharField(primary_key=True, max_length=20)
+    code = models.CharField(max_length=10)
+
+    class Meta:
+        db_table = 'bank'
