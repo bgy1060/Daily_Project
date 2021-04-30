@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from . import serializers
 from .models import *
 from .serializers import PostListSerializer, DetailPostSerializer, CommentListSerializer, CategoryListSerializer, \
-    FAQListSerializer
+    FAQListSerializer, DetailCommentSerializer
 from users.serializers import EmptySerializer
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
@@ -154,6 +154,24 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
                 like_dislike = -1
 
         serializer = DetailPostSerializer(query_set, context=[is_like_dislke, editable, like_dislike])
+        return JsonResponse(serializer.data, safe=False)
+        return Response(status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'comment_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='세부 내용을 보고싶은 댓글 comment_id'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False)
+    def detail_comment(self, request):
+        """ 변경된 댓글의 내용 확인 - comment_id를 보내면 해당 아이디의 댓글 내용을 보여줌
+        """
+        comment_id = request.data['comment_id']
+
+        query_set = Comment.objects.get(comment_id=comment_id)
+        serializer = DetailCommentSerializer(query_set)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 
