@@ -97,6 +97,7 @@ INSTALLED_APPS = [
     '_8percent',
     '_90days',
     'together_funding',
+    'cocktail_funding',
 
 
 ]

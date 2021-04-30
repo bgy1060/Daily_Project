@@ -20,6 +20,7 @@ from rest_framework import routers
 from _8percent.views import _8PercentViewSet
 from _90days.views import _90DaysViewSet
 from bf_fund.views import BFViewSet
+from cocktail_funding.views import CocktailViewSet
 from fun_funding.views import FunViewSet
 from hello_funding.views import HelloViewSet
 from honest_fund.views import HonestViewSet
@@ -77,6 +78,7 @@ router.register('api/fun', FunViewSet, basename='fun_funding')
 router.register('api/8percent', _8PercentViewSet, basename='8percent')
 router.register('api/90days', _90DaysViewSet, basename='90days')
 router.register('api/together', TogetherViewSet, basename='together_funding')
+router.register('api/cocktail', CocktailViewSet, basename='cocktail_funding')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),

@@ -1,3 +1,4 @@
+from django.db.models import Count
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, password_validation
@@ -52,10 +53,11 @@ class CommentListSerializer(serializers.ModelSerializer):
     is_like_dislike = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
     like_dislike = serializers.SerializerMethodField()
+    num_child = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ('comment_id', 'user', 'comment_content', 'date', 'like', 'dislike', 'post_id', 'parent_comment','is_like_dislike','like_dislike','editable')
+        fields = ('comment_id', 'user', 'comment_content', 'date', 'like', 'dislike', 'post_id', 'parent_comment','is_like_dislike','like_dislike', 'editable', 'num_child')
 
     def get_user(self, obj: User):
         return obj.uid.email
@@ -78,6 +80,10 @@ class CommentListSerializer(serializers.ModelSerializer):
             return int(obj.commentlike_set.get(uid=self.context).like_dislike)
         except:
             return-1
+
+    def get_num_child(self, obj: Comment):
+        return Comment.objects.filter(parent_comment_id=obj.comment_id).count()
+
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
