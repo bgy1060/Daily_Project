@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     '_90days',
     'together_funding',
     'cocktail_funding',
+    'daon_funding',
 
 
 ]
