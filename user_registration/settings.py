@@ -99,6 +99,7 @@ INSTALLED_APPS = [
     'together_funding',
     'cocktail_funding',
     'daon_funding',
+    'leadingplus_funding',
 
 
 ]

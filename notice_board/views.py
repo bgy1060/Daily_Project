@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from . import serializers
 from .models import *
 from .serializers import PostListSerializer, DetailPostSerializer, CommentListSerializer, CategoryListSerializer, \
-    FAQListSerializer, DetailCommentSerializer
+    FAQListSerializer
 from users.serializers import EmptySerializer
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
@@ -167,11 +167,17 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
     @action(methods=['POST', ], detail=False)
     def detail_comment(self, request):
         """ 변경된 댓글의 내용 확인 - comment_id를 보내면 해당 아이디의 댓글 내용을 보여줌
+            - "is_like_dislike": true 이면 좋아요/싫어요를 이미 누른 상태 (token 을 보내줘야만 확인 가능)
+            - "editable": true 이면 수정 가능 (token을 보내줘야 확인 가능)
         """
         comment_id = request.data['comment_id']
 
         query_set = Comment.objects.get(comment_id=comment_id)
-        serializer = DetailCommentSerializer(query_set)
+        if request.user.is_anonymous:
+            context = False
+        else:
+            context = request.user.id
+        serializer = CommentListSerializer(query_set, context=context)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
 

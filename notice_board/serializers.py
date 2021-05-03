@@ -48,17 +48,6 @@ class DetailPostSerializer(serializers.ModelSerializer):
         return self.context[2]
 
 
-class DetailCommentSerializer(serializers.ModelSerializer):
-    num_child = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Comment
-        fields = ('comment_id', 'comment_content', 'like', 'dislike', 'num_child')
-
-    def get_num_child(self, obj: Comment):
-        return Comment.objects.filter(parent_comment_id=obj.comment_id).count()
-
-
 class CommentListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     is_like_dislike = serializers.SerializerMethodField()

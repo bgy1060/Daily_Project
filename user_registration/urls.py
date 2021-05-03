@@ -25,6 +25,7 @@ from daon_funding.views import DaonViewSet
 from fun_funding.views import FunViewSet
 from hello_funding.views import HelloViewSet
 from honest_fund.views import HonestViewSet
+from leadingplus_funding.views import LeadingPlusViewSet
 from lendit.views import LenditViewSet
 from loanpoint.views import LoanPointViewSet
 from miracle_funding.views import MiracleViewSet
@@ -81,6 +82,7 @@ router.register('api/90days', _90DaysViewSet, basename='90days')
 router.register('api/together', TogetherViewSet, basename='together_funding')
 router.register('api/cocktail', CocktailViewSet, basename='cocktail_funding')
 router.register('api/daon', DaonViewSet, basename='daon_funding')
+router.register('api/leadingplus', LeadingPlusViewSet, basename='leadingplus_funding')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),
