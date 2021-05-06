@@ -42,8 +42,8 @@ from notice_board.views import *
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-
 from v_funding.views import VFundingViewSet
+
 
 schema_view = get_schema_view(
     openapi.Info(title="Snippets API",
@@ -77,12 +77,13 @@ router.register('api/bf', BFViewSet, basename='bf_fund')
 router.register('api/miracle', MiracleViewSet, basename='miracle_funding')
 router.register('api/mosaic', MosaicViewSet, basename='mosaic_funding')
 router.register('api/fun', FunViewSet, basename='fun_funding')
-router.register('api/8percent', _8PercentViewSet, basename='8percent')
-router.register('api/90days', _90DaysViewSet, basename='90days')
+router.register('api/8percent', _8PercentViewSet, basename='_8percent')
+router.register('api/90days', _90DaysViewSet, basename='_90days')
 router.register('api/together', TogetherViewSet, basename='together_funding')
 router.register('api/cocktail', CocktailViewSet, basename='cocktail_funding')
 router.register('api/daon', DaonViewSet, basename='daon_funding')
 router.register('api/leadingplus', LeadingPlusViewSet, basename='leadingplus_funding')
+
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),

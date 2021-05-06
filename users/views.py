@@ -219,12 +219,8 @@ class AuthViewSet(viewsets.GenericViewSet):
         paginator = PageNumberPagination()
         paginator.page_size = request.data['page_size']
         query_set = Point_List.objects.filter(uid=request.user.id,
-                                              date__year__gte=start.year,
-                                              date__month__gte=start.month,
-                                              date__day__gte=start.day,
-                                              date__year__lte=end.year,
-                                              date__month__lte=end.month,
-                                              date__day__lte=end.day).order_by("-id")
+                                              date__range=[start, end]).order_by("-id")
+
         result_page = paginator.paginate_queryset(query_set, request)
         serializer = PointListSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
