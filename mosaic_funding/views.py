@@ -34,6 +34,39 @@ class MosaicViewSet(viewsets.GenericViewSet):
     @swagger_auto_schema(request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
+            'id': openapi.Schema(type=openapi.TYPE_STRING, description='로그인 아이디'),
+            'pwd': openapi.Schema(type=openapi.TYPE_STRING, description='로그인 비밀번호'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def is_valid(self, request):
+        """ 사용자가 입력한 로그인 정보가 유효한 값인지 확인 [token required]"""
+
+        # 세션 시작하기
+        session = requests.session()
+
+        USER = request.data['id']
+        PASS = request.data['pwd']
+
+        login_info = {
+            "mb_id": USER,  # 아이디 지정
+            "mb_password": PASS  # 비밀번호 지정
+        }
+
+        url_login = "https://www.mosaicfunding.co.kr/bbs/login_check.php"
+        res = session.post(url_login, data=login_info)
+        res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+        if '가입된 회원' in res.text:
+            return Response(data={"invalid!"}, status=status.HTTP_404_NOT_FOUND)
+
+        else:
+            return Response(data={"valid!"}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
             'company_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='계좌 정보를 가져오고 싶은 회사 ID'),
             'refresh': openapi.Schema(type=openapi.TYPE_INTEGER, description='값이 1이면 크롤링 해서 데이터 가져오기, 값이 0이면 DB에 저장되어 '
                                                                              '있는 값 가져오기'),

@@ -35,6 +35,49 @@ class _90DaysViewSet(viewsets.GenericViewSet):
     @swagger_auto_schema(request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
+            'id': openapi.Schema(type=openapi.TYPE_STRING, description='로그인 아이디'),
+            'pwd': openapi.Schema(type=openapi.TYPE_STRING, description='로그인 비밀번호'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def is_valid(self, request):
+        """ 사용자가 입력한 로그인 정보가 유효한 값인지 확인 [token required]"""
+
+        # 세션 시작하기
+        session = requests.session()
+
+        driver = webdriver.Chrome("C:/Users/daily-funding/Desktop/chromedriver")
+
+        USER = request.data['id']
+        PASS = request.data['pwd']
+
+        driver.get("https://90days.kr/login?u=/k2/")
+
+        time.sleep(1)
+
+        email = driver.find_element_by_css_selector("input#login_id")
+        email.send_keys(USER)
+
+        pwd = driver.find_element_by_css_selector("input#login_passwd")
+        pwd.send_keys(PASS)
+
+        login_btn = driver.find_element_by_css_selector("input#login_bt1")
+        login_btn.send_keys('\n')
+
+        time.sleep(2)
+
+        try:
+            is_valid_btn = driver.find_element_by_css_selector("div.main-page__banner__img-desktop")
+            driver.close()
+            return Response(data={"valid!"}, status=status.HTTP_200_OK)
+        except:
+            driver.close()
+            return Response(data={"invalid!"}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
             'company_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='계좌 정보를 가져오고 싶은 회사 ID'),
             'refresh': openapi.Schema(type=openapi.TYPE_INTEGER, description='값이 1이면 크롤링 해서 데이터 가져오기, 값이 0이면 DB에 저장되어 '
                                                                              '있는 값 가져오기'),

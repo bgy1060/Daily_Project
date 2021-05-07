@@ -57,15 +57,14 @@ class TeraViewSet(viewsets.GenericViewSet):
             'scope': login()[3],
         }
 
-        url_login = "https://api.terafunding.com/oauth/signin"
-        res = session.post(url_login, json=login_info)
-        res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
-
-        if '가입된 회원' in res.text:
-            return Response(data={"invalid!"}, status=status.HTTP_404_NOT_FOUND)
-
-        else:
+        try:
+            url_login = "https://api.terafunding.com/oauth/signin"
+            res = session.post(url_login, json=login_info)
+            res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
             return Response(data={"valid!"}, status=status.HTTP_200_OK)
+
+        except:
+            return Response(data={"invalid!"}, status=status.HTTP_404_NOT_FOUND)
 
     @swagger_auto_schema(request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,

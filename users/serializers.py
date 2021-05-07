@@ -3,9 +3,12 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.models import BaseUserManager
 
+import my_settings
 from notice_board.models import Point_List
 from users.models import CustomUser, Register
 from company.models import Company
+
+import AES
 
 User = get_user_model()
 
@@ -82,6 +85,7 @@ class WithdrawalSerializer(serializers.Serializer):
 
 
 class CompanyRegisterSerializer(serializers.ModelSerializer):
+    email = serializers.SerializerMethodField()
     company_name = serializers.SerializerMethodField()
     nickname = serializers.SerializerMethodField()
 
@@ -89,10 +93,14 @@ class CompanyRegisterSerializer(serializers.ModelSerializer):
         model = Register
         fields = (
             'uid',
+            'email',
             'company_id',
             'company_name',
             'nickname'
         )
+
+    def get_email(self, obj: Register):
+        return AES.AESCipher(bytes(my_settings.key)).decrypt(obj.username.strip()).decode()
 
     def get_company_name(self, obj: Register):
         return obj.company_id.company_name
@@ -104,7 +112,7 @@ class CompanyRegisterSerializer(serializers.ModelSerializer):
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ('id', 'company_name')
+        fields = ('id', 'company_name', 'nickname')
 
 
 class UserInfoSerializer(serializers.ModelSerializer):

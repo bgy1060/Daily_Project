@@ -34,6 +34,57 @@ class NiceabcViewSet(viewsets.GenericViewSet):
     @swagger_auto_schema(request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
+            'id': openapi.Schema(type=openapi.TYPE_STRING, description='로그인 아이디'),
+            'pwd': openapi.Schema(type=openapi.TYPE_STRING, description='로그인 비밀번호'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def is_valid(self, request):
+        """ 사용자가 입력한 로그인 정보가 유효한 값인지 확인 [token required]"""
+
+        # 세션 시작하기
+        session = requests.session()
+
+        USER = request.data['id']
+        PASS = request.data['pwd']
+
+        login_info = {
+            "MBID": USER,  # 아이디 지정
+            "PWD": PASS  # 비밀번호 지정
+        }
+
+        url_login = "https://www.niceabc.co.kr/login/loginReq.nbp"
+        res = session.post(url_login, data=login_info)
+        res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
+
+        login = 'https://www.niceabc.co.kr/login'
+        res2 = session.post(login, cookies=session.cookies)
+
+        if '자동입력방지' in res2.text:
+
+            image_url = "https://www.niceabc.co.kr/req/captcha"
+
+            image_path = 'captchaImg/image.png'
+
+            res = requests.get(url_login, cookies=session.cookies)
+
+            photo = open(image_path, 'wb')
+            photo.write(res.content)
+            photo.close()
+
+            print("여기")
+            return Response(data={"valid!"}, status=status.HTTP_200_OK)
+        else:
+            if 'name' in res.text:
+                return Response(data={"valid!"}, status=status.HTTP_200_OK)
+            else:
+                print("here")
+                return Response(data={"invalid!"}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
             'company_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='계좌 정보를 가져오고 싶은 회사 ID'),
             'refresh': openapi.Schema(type=openapi.TYPE_INTEGER, description='값이 1이면 크롤링 해서 데이터 가져오기, 값이 0이면 DB에 저장되어 '
                                                                              '있는 값 가져오기'),

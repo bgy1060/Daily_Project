@@ -13,7 +13,8 @@ from rest_framework.pagination import PageNumberPagination
 from datetime import datetime
 from notice_board.models import *
 from . import serializers
-from .serializers import CompanyRegisterSerializer, CompanySerializer, UserInfoSerializer, PointSerializer, PointListSerializer
+from .serializers import CompanyRegisterSerializer, CompanySerializer, UserInfoSerializer, PointSerializer, \
+    PointListSerializer
 from .utils import get_and_authenticate_user, create_user_account
 from django.utils import timezone
 
@@ -134,7 +135,6 @@ class AuthViewSet(viewsets.GenericViewSet):
                                               action_id=point_action,
                                               detail_action='초대 친구 가입 축하 포인트',
                                               uid=uid)
-
 
             point_action = Point_action.objects.get(action='친구 가입')
             uid = CustomUser.objects.get(id=data['id'])
@@ -324,7 +324,7 @@ class RegisterViewSet(viewsets.GenericViewSet):
                 message = {"This site has already been registered!"}
 
         except:
-            message = {"Please enter your company name correctly"}
+            message = {"Please enter your company id correctly"}
 
         return Response(data=message, status=status.HTTP_201_CREATED)
 
@@ -336,6 +336,104 @@ class RegisterViewSet(viewsets.GenericViewSet):
         serializer = CompanyRegisterSerializer(query_set, many=True)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'company_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='등록 해지를 원하는 회사 ID'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def company_delete(self, request):
+        """ 등록 회사 삭제 : 사용자가 등록한 P2P 사이트 로그인 정보 삭제 [token required]"""
+        data = request.data
+
+        company_id = Company.objects.get(id=int(data['company_id']))
+
+        try:
+            Register.objects.get(company_id=company_id, uid=request.user.id).delete()
+        except:
+            message = {"This site has already been deleted!"}
+            return Response(data=message, status=status.HTTP_404_NOT_FOUND)
+
+        point_action = Point_action.objects.get(action='업체 연동 해지')
+
+        if Point_List.objects.filter(uid=request.user.id, date__year=timezone.now().year,
+                                     date__month=timezone.now().month,
+                                     date__day=timezone.now().day,
+                                     action_id=point_action.id).count() >= point_action.limit_number_of_day:
+            pass
+        else:
+            uid = CustomUser.objects.get(id=request.user.id)
+            try:
+                total_point = Point_List.objects.filter(uid=request.user.id).order_by('-id')[0].total_point
+                Point_List.objects.create(point=point_action.point_value,
+                                          total_point=total_point + point_action.point_value,
+                                          date=timezone.now(),
+                                          action_id=point_action,
+                                          detail_action='P2P 업체 연동 해지 차감 포인트',
+                                          uid=uid)
+            except:
+                Point_List.objects.create(point=point_action.point_value,
+                                          total_point=point_action.point_value,
+                                          date=timezone.now(),
+                                          action_id=point_action,
+                                          detail_action='P2P 업체 연동 해지 차감 포인트',
+                                          uid=uid)
+        message = {"Delete_Ok"}
+
+        return Response(data=message, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'company_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='로그인 정보 업데이트를 원하는 회사 ID'),
+            'username': openapi.Schema(type=openapi.TYPE_STRING, description='P2P 회사(company_id를 가진 회사) 아이디'),
+            'user_password': openapi.Schema(type=openapi.TYPE_STRING, description='P2P 회사(company_id를 가진 회사) 비밀번호'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def company_update(self, request):
+        """ 등록 회사 로그인 정보 업데이트 : 사용자가 등록한 P2P 사이트 로그인 정보 업데이트 [token required]"""
+        data = request.data
+
+        company_id = Company.objects.get(id=int(data['company_id']))
+
+        try:
+            username = data['username']
+            encrypted_username = AES.AESCipher(bytes(my_settings.key)).encrypt(username).decode('utf-8')
+
+            try:  # id, pwd 모두 업데이트
+                user_password = data['user_password']
+                encrypted_user_password = AES.AESCipher(bytes(my_settings.key)).encrypt(user_password).decode('utf-8')
+
+                register = Register.objects.get(company_id=company_id, uid=request.user.id)
+                register.username = encrypted_username
+                register.user_password = encrypted_user_password
+                register.save()
+
+                message = {"ID & PWD Udate_Ok"}
+
+            except:  # id만 업데이트
+                register = Register.objects.get(company_id=company_id, uid=request.user.id)
+                register.username = encrypted_username
+                register.save()
+
+                message = {"ID Udate_Ok"}
+
+        except:  # 비밀번호만 업데이트
+            user_password = data['user_password']
+            encrypted_user_password = AES.AESCipher(bytes(my_settings.key)).encrypt(user_password)
+
+            register = Register.objects.get(company_id=company_id, uid=request.user.id)
+            register.user_password = encrypted_user_password
+            register.save()
+
+            message = {"PWD Udate_Ok"}
+
+        return Response(data=message, status=status.HTTP_200_OK)
 
 
 class CodeViewSet(viewsets.GenericViewSet):
