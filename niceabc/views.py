@@ -1,3 +1,6 @@
+import json
+import os
+
 from django.shortcuts import render
 
 # Create your views here.
@@ -20,6 +23,12 @@ import requests, pickle
 from bs4 import BeautifulSoup
 from users.models import *
 import AES
+import kakao_ocr as ocr
+from PIL import Image
+import cv2
+import base64
+import io
+from io import BytesIO
 
 User = get_user_model()
 
@@ -59,27 +68,69 @@ class NiceabcViewSet(viewsets.GenericViewSet):
         res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
         login = 'https://www.niceabc.co.kr/login'
-        res2 = session.post(login, cookies=session.cookies)
+        res2 = session.get(login, cookies=session.cookies)
 
-        if '자동입력방지' in res2.text:
+        if '자동입력' in res2.text:
 
             image_url = "https://www.niceabc.co.kr/req/captcha"
 
             image_path = 'captchaImg/image.png'
 
-            res = requests.get(url_login, cookies=session.cookies)
+            res = requests.get(image_url, cookies=session.cookies)
 
-            photo = open(image_path, 'wb')
-            photo.write(res.content)
-            photo.close()
+            # 이미지 byte 코드 png로 변환
+            bytes_stream = BytesIO(res.content)
 
-            print("여기")
-            return Response(data={"valid!"}, status=status.HTTP_200_OK)
+            roiimg = Image.open(bytes_stream)
+
+            imgByteArr = BytesIO()  # Initialize an empty byte stream
+            roiimg.save(imgByteArr, format('PNG'))
+            imgByteArr = imgByteArr.getvalue()
+
+            with open(os.path.join(image_path), 'wb') as f:
+                f.write(imgByteArr)
+
+            # png이미지 jpg로 변환
+            im = Image.open(image_path)
+
+            fill_color = (255, 255, 255)  # your new background color
+
+            im = im.convert("RGBA")  # it had mode P after DL it from OP
+            if im.mode in ('RGBA', 'LA'):
+                background = Image.new(im.mode[:-1], im.size, fill_color)
+                background.paste(im, im.split()[-1])  # omit transparency
+                im = background
+
+            im.convert("RGB").save("captchaImg/j_image.jpg")
+
+            appkey = my_settings.appkey
+            resize_impath = ocr.kakao_ocr_resize("captchaImg/j_image.jpg")
+
+            if resize_impath is not None:
+                image_path = resize_impath
+            output = ocr.kakao_ocr("captchaImg/j_image.jpg", appkey).json()
+
+            answer = output['result'][0]['recognition_words'][0]
+
+            login_info = {
+                "MBID": USER,  # 아이디 지정
+                "PWD": PASS,  # 비밀번호 지정
+                "answer": answer
+
+            }
+
+            url_login = "https://www.niceabc.co.kr/login/loginReq.nbp"
+            res = session.post(url_login, data=login_info)
+
+            if 'name' in res.text:
+                return Response(data={"valid!"}, status=status.HTTP_200_OK)
+            else:
+                return Response(data={"invalid!"}, status=status.HTTP_404_NOT_FOUND)
+
         else:
             if 'name' in res.text:
                 return Response(data={"valid!"}, status=status.HTTP_200_OK)
             else:
-                print("here")
                 return Response(data={"invalid!"}, status=status.HTTP_404_NOT_FOUND)
 
     @swagger_auto_schema(request_body=openapi.Schema(
