@@ -319,12 +319,12 @@ class RegisterViewSet(viewsets.GenericViewSet):
                                                   action_id=point_action,
                                                   detail_action='새로운 P2P 업체 연동 감사 포인트',
                                                   uid=uid)
-                message = {"Information registration completed!"}
+                message = {0: "Information registration completed!"}
             except:
-                message = {"This site has already been registered!"}
+                message = {1: "This site has already been registered!"}
 
         except:
-            message = {"Please enter your company id correctly"}
+            message = {2: "Please enter your company id correctly"}
 
         return Response(data=message, status=status.HTTP_201_CREATED)
 
@@ -424,14 +424,17 @@ class RegisterViewSet(viewsets.GenericViewSet):
                 message = {"ID Udate_Ok"}
 
         except:  # 비밀번호만 업데이트
-            user_password = data['user_password']
-            encrypted_user_password = AES.AESCipher(bytes(my_settings.key)).encrypt(user_password)
+            try:
+                user_password = data['user_password']
+                encrypted_user_password = AES.AESCipher(bytes(my_settings.key)).encrypt(user_password)
 
-            register = Register.objects.get(company_id=company_id, uid=request.user.id)
-            register.user_password = encrypted_user_password
-            register.save()
+                register = Register.objects.get(company_id=company_id, uid=request.user.id)
+                register.user_password = encrypted_user_password
+                register.save()
 
-            message = {"PWD Udate_Ok"}
+                message = {"PWD Udate_Ok"}
+            except:  # 아이디 비밀번호 둘 다 없는 경우
+                message = {"Please enter id & pwd"}
 
         return Response(data=message, status=status.HTTP_200_OK)
 
