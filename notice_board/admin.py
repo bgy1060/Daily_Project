@@ -28,6 +28,12 @@ class FAQAdmin(admin.ModelAdmin):
 
 
 @admin.register(Point_action)
-class FAQAdmin(admin.ModelAdmin):
+class PointActionAdmin(admin.ModelAdmin):
     list_display = ['id', 'action', 'point_value', 'limit_number_of_day']
     list_display_links = ['id', 'action']
+
+
+@admin.register(Point_List)
+class PointListAdmin(admin.ModelAdmin):
+    list_display = ['id', 'action_id', 'uid', 'point', 'total_point', 'date', 'detail_action']
+    list_display_links = ['id', 'action_id']
