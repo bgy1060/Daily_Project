@@ -100,6 +100,7 @@ INSTALLED_APPS = [
     'cocktail_funding',
     'daon_funding',
     'leadingplus_funding',
+    'django_rest_passwordreset',
 
 
 
@@ -192,3 +193,12 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.naver.com'
+EMAIL_HOST_USER = my_settings.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = my_settings.EMAIL_HOST_PASSWORD
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+DEFAULT_FROM_MAIL = EMAIL_HOST_USER

@@ -47,7 +47,7 @@ class _90DaysViewSet(viewsets.GenericViewSet):
         # 세션 시작하기
         session = requests.session()
 
-        driver = webdriver.Chrome("C:/Users/daily-funding/Desktop/chromedriver")
+        driver = webdriver.Chrome("chromedriver")
 
         USER = request.data['id']
         PASS = request.data['pwd']
@@ -87,7 +87,7 @@ class _90DaysViewSet(viewsets.GenericViewSet):
     def account(self, request):
         """ USER 계좌 정보 가져오기 [token required]"""
         company_id = Company.objects.get(id=int(request.data['company_id']))
-        driver = webdriver.Chrome("C:/Users/daily-funding/Desktop/chromedriver")
+        driver = webdriver.Chrome("chromedriver")
 
         if request.data['refresh'] == 0:
             query_set = request.user.account_set.get(company_id=company_id)
@@ -155,7 +155,7 @@ class _90DaysViewSet(viewsets.GenericViewSet):
     def balance(self, request):
         """ USER 투자 요약 정보 가져오기 [token required] """
         company_id = Company.objects.get(id=int(request.data['company_id']))
-        driver = webdriver.Chrome("C:/Users/daily-funding/Desktop/chromedriver")
+        driver = webdriver.Chrome("chromedriver")
 
         # 세션 시작하기
         session = requests.session()

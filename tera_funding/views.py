@@ -90,7 +90,7 @@ class TeraViewSet(viewsets.GenericViewSet):
             return Response(status=status.HTTP_200_OK)
 
         try:
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'rb') as f:
                 auth = pickle.load(f)
 
@@ -117,11 +117,11 @@ class TeraViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, json=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(res.json()['token_type'] + " " + res.json()['access_token'], f)
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'rb') as f:
                 auth = pickle.load(f)
 
@@ -155,11 +155,11 @@ class TeraViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, json=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(res.json()['token_type'] + " " + res.json()['access_token'], f)
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'rb') as f:
                 auth = pickle.load(f)
 
@@ -214,7 +214,7 @@ class TeraViewSet(viewsets.GenericViewSet):
             return Response(status=status.HTTP_200_OK)
 
         try:
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'rb') as f:
                 auth = pickle.load(f)
 
@@ -241,11 +241,11 @@ class TeraViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, json=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(res.json()['token_type'] + " " + res.json()['access_token'], f)
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'rb') as f:
                 auth = pickle.load(f)
 
@@ -279,11 +279,11 @@ class TeraViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, json=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(res.json()['token_type'] + " " + res.json()['access_token'], f)
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'rb') as f:
                 auth = pickle.load(f)
 

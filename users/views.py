@@ -1,9 +1,10 @@
 # Create your views here.
+import pandas
 from django.contrib.auth import get_user_model, logout
 from django.core.exceptions import ImproperlyConfigured
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -25,6 +26,7 @@ from drf_yasg import openapi
 import uuid
 import codecs
 import AES
+from datetime import datetime, timedelta
 
 User = get_user_model()
 
@@ -49,9 +51,11 @@ class AuthViewSet(viewsets.GenericViewSet):
         data = serializers.LoginSerializer(user).data
         if data['withdrawal_status']:
             data = {"There is no member information."}
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
         else:
             data = serializers.LoginSerializer(user).data
             point_action = Point_action.objects.get(action='로그인')
+
             if Point_List.objects.filter(uid=data['id'], date__year=timezone.now().year,
                                          date__month=timezone.now().month,
                                          date__day=timezone.now().day,
@@ -108,7 +112,7 @@ class AuthViewSet(viewsets.GenericViewSet):
                 try:
                     uid = CustomUser.objects.get(code=request.data['code'])
                 except:
-                    return Response(data={"Invitation Code is invalid!"}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(data={"ucode": ["Invitation Code is invalid!"]}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response(data={"회원가입 완료!"}, status=status.HTTP_201_CREATED)
             point_action = Point_action.objects.get(action='친구 가입')
@@ -120,7 +124,7 @@ class AuthViewSet(viewsets.GenericViewSet):
                 pass
             else:
                 try:
-                    total_point = Point_List.objects.filter(uid=data['id']).order_by('-id')[0].total_point
+                    total_point = Point_List.objects.filter(uid=uid).order_by('-id')[0].total_point
                     Point_List.objects.create(point=point_action.point_value,
                                               total_point=total_point + point_action.point_value,
                                               date=timezone.now(),
@@ -196,7 +200,6 @@ class AuthViewSet(viewsets.GenericViewSet):
     def user_info(self, request):
         """ USER 정보 리스트 출력 --- uid 번호와 USER email 정보 전송"""
         query_set = User.objects.all()
-        print(query_set)
         serializer = UserInfoSerializer(query_set, many=True)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
@@ -212,14 +215,14 @@ class AuthViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def my_point_list(self, request):
-        """ USER 포인트 사용 내역 출력 [token required]"""
+        """ USER 포인트 내역 출력 [token required]"""
         start = datetime.strptime(request.data['start'], "%Y-%m-%d")
         end = datetime.strptime(request.data['end'], "%Y-%m-%d")
 
         paginator = PageNumberPagination()
         paginator.page_size = request.data['page_size']
         query_set = Point_List.objects.filter(uid=request.user.id,
-                                              date__range=[start, end]).order_by("-id")
+                                              date__range=[start, end + timedelta(days=1)]).order_by("-id")
 
         result_page = paginator.paginate_queryset(query_set, request)
         serializer = PointListSerializer(result_page, many=True)
@@ -358,29 +361,22 @@ class RegisterViewSet(viewsets.GenericViewSet):
             return Response(data=message, status=status.HTTP_404_NOT_FOUND)
 
         point_action = Point_action.objects.get(action='업체 연동 해지')
-
-        if Point_List.objects.filter(uid=request.user.id, date__year=timezone.now().year,
-                                     date__month=timezone.now().month,
-                                     date__day=timezone.now().day,
-                                     action_id=point_action.id).count() >= point_action.limit_number_of_day:
-            pass
-        else:
-            uid = CustomUser.objects.get(id=request.user.id)
-            try:
-                total_point = Point_List.objects.filter(uid=request.user.id).order_by('-id')[0].total_point
-                Point_List.objects.create(point=point_action.point_value,
-                                          total_point=total_point + point_action.point_value,
-                                          date=timezone.now(),
-                                          action_id=point_action,
-                                          detail_action='P2P 업체 연동 해지 차감 포인트',
-                                          uid=uid)
-            except:
-                Point_List.objects.create(point=point_action.point_value,
-                                          total_point=point_action.point_value,
-                                          date=timezone.now(),
-                                          action_id=point_action,
-                                          detail_action='P2P 업체 연동 해지 차감 포인트',
-                                          uid=uid)
+        uid = CustomUser.objects.get(id=request.user.id)
+        try:
+            total_point = Point_List.objects.filter(uid=request.user.id).order_by('-id')[0].total_point
+            Point_List.objects.create(point=point_action.point_value,
+                                      total_point=total_point + point_action.point_value,
+                                      date=timezone.now(),
+                                      action_id=point_action,
+                                      detail_action='P2P 업체 연동 해지 차감 포인트',
+                                      uid=uid)
+        except:
+            Point_List.objects.create(point=point_action.point_value,
+                                      total_point=point_action.point_value,
+                                      date=timezone.now(),
+                                      action_id=point_action,
+                                      detail_action='P2P 업체 연동 해지 차감 포인트',
+                                      uid=uid)
         message = {"Delete_Ok"}
 
         return Response(data=message, status=status.HTTP_200_OK)
@@ -498,3 +494,6 @@ class CodeViewSet(viewsets.GenericViewSet):
             data = "Point payment completed!"
 
         return Response(data=data, status=status.HTTP_201_CREATED)
+
+
+

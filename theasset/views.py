@@ -92,7 +92,7 @@ class TheassetViewSet(viewsets.GenericViewSet):
             return Response(status=status.HTTP_200_OK)
 
         try:
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'rb') as f:
                 session.cookies.update(pickle.load(f))
 
@@ -119,7 +119,7 @@ class TheassetViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
 
@@ -151,7 +151,7 @@ class TheassetViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
 
@@ -207,7 +207,7 @@ class TheassetViewSet(viewsets.GenericViewSet):
             return Response(status=status.HTTP_200_OK)
 
         try:
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'rb') as f:
                 session.cookies.update(pickle.load(f))
 
@@ -235,7 +235,7 @@ class TheassetViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
 
@@ -267,7 +267,7 @@ class TheassetViewSet(viewsets.GenericViewSet):
             res = session.post(url_login, data=login_info)
             res.raise_for_status()  # 오류가 발생하면 예외가 발생합니다.
 
-            with open('C:/Users/daily-funding/Desktop/cookie/' + str(request.user.id) + '_' + str(
+            with open('cookie/' + str(request.user.id) + '_' + str(
                     company_id.id) + '_cookie.txt', 'wb') as f:
                 pickle.dump(session.cookies, f)
 

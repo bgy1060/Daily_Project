@@ -13,13 +13,17 @@ User = get_user_model()
 
 class PostListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
 
     class Meta:
         model = NoticeBoard
-        fields = ('post_id','user','title', 'date', 'views', 'like', 'dislike', 'category_id', 'uid')
+        fields = ('post_id','user','title', 'date', 'views','comment_count', 'like', 'dislike', 'category_id', 'uid')
 
     def get_user(self, obj: User):
         return obj.uid.email
+
+    def get_comment_count(self, obj: NoticeBoard):
+        return Comment.objects.filter(post_id=obj.post_id).count()
 
 
 class DetailPostSerializer(serializers.ModelSerializer):
