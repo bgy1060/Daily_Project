@@ -89,7 +89,6 @@ class CommentListSerializer(serializers.ModelSerializer):
         return Comment.objects.filter(parent_comment_id=obj.comment_id).count()
 
 
-
 class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category

@@ -2,7 +2,7 @@
 import pandas
 from django.contrib.auth import get_user_model, logout
 from django.core.exceptions import ImproperlyConfigured
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
@@ -27,6 +27,7 @@ import uuid
 import codecs
 import AES
 from datetime import datetime, timedelta
+
 
 User = get_user_model()
 
@@ -237,6 +238,20 @@ class AuthViewSet(viewsets.GenericViewSet):
         serializer = PointSerializer(query_set)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
+
+    @csrf_exempt
+    @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def get_image(self, request):
+        """ 사용자 프로필 사진 가져오기 - 프로필이 없을 경우 기본 이미지로 [token required]"""
+        uid = request.user.id
+        try:
+            with open('./user_profile/'+str(uid)+'_profile.png', 'rb') as f:
+                file_data = f.read()
+        except IOError:
+            with open('./user_profile/main_profile.png', 'rb') as f:
+                file_data = f.read()
+        response = HttpResponse(file_data, content_type="image/png")
+        return response
 
     def get_serializer_class(self):
         if not isinstance(self.serializer_classes, dict):
@@ -494,6 +509,9 @@ class CodeViewSet(viewsets.GenericViewSet):
             data = "Point payment completed!"
 
         return Response(data=data, status=status.HTTP_201_CREATED)
+
+
+
 
 
 

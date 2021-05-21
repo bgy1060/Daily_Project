@@ -100,9 +100,6 @@ INSTALLED_APPS = [
     'cocktail_funding',
     'daon_funding',
     'leadingplus_funding',
-    'django_rest_passwordreset',
-
-
 
 ]
 
