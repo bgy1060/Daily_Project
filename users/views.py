@@ -1,5 +1,8 @@
 # Create your views here.
+import json
+
 import pandas
+from PIL import Image
 from django.contrib.auth import get_user_model, logout
 from django.core.exceptions import ImproperlyConfigured
 from django.http import JsonResponse, HttpResponse
@@ -252,6 +255,20 @@ class AuthViewSet(viewsets.GenericViewSet):
                 file_data = f.read()
         response = HttpResponse(file_data, content_type="image/png")
         return response
+
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def image_upload(self,  request):
+        """ 사용자 프로필 사진 가져오기 - 프로필이 없을 경우 기본 이미지로 [token required]"""
+        uid = request.user.id
+        img = request.FILES['filename']
+
+        import os
+        with open(os.path.join('./user_profile/', str(uid)+'_profile.png'), mode='wb') as file:
+            for chunk in img.chunks():
+                file.write(chunk)
+
+        return Response(status=status.HTTP_200_OK)
 
     def get_serializer_class(self):
         if not isinstance(self.serializer_classes, dict):
