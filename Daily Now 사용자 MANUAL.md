@@ -223,6 +223,8 @@
 
   - 시계(반시계방향) 모양의 아이콘을 누르면 사용자의 투자 정보를 실시간으로 동기화한다.
 
+<br />
+
   #### 설정
 
   <img src = "https://lh3.googleusercontent.com/3TSJzDtfHYNDU96WhRw08hGRNKxytutvulyQAUCJG_oatwkPZ2T0rLCv0Po1POJ_5MS9oVKVhpcUiNZkccM8VoQtNXSXb_BWz6ykcXubbjF7umQKrY3oj3_B9TIVByrkuO0kB75K"  width='700' >
@@ -324,10 +326,11 @@
 
       
     
+
 <br />
     
 - 변경하려는 이메일 또는 아이디와 비밀번호를 입력한 후, 회원 인증 버튼을 누른다.
-    
+  
   - 인증을 성공하면, 다음 이미지가 보여지며 등록을 진행할 수 있다.
     
     
