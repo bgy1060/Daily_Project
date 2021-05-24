@@ -102,28 +102,28 @@
   - ''내 글 보기'' 버튼을 클릭하면 내가 쓴 글을 확인할 수 있다.
   - ''글쓰기'' 버튼을 클릭하면 새로운 글을 작성할 수 있다.
 
-  
+
   <br />
   <img src ="https://lh3.googleusercontent.com/wsC3933OAFAGjxt_pEoCaG5I7IT7e4qN5VblLrVSXdNwSnkiim-UTM7_5JTSG5txsVjsPEAErxjiS4k_7ABusAjWavxnHdnl8p6NxVuBFyIlYDj4sgehE--rxdO94s3OlEuWHWmQ" width='670' height ='630'>
   <br />
-  
+
   - "내 글 보기" 버튼을 클릭하면 카테고리 별로 내가 쓴 글을 최신 순으로 확인할 수 있다.
   - 게시물을 선택하면 해당 게시글로 이동한다.
-  <br />
+    <br />
 
   <img src="https://lh6.googleusercontent.com/3BRsgTvBrFtfRr5fZbM-2JALnAy7qX1HrxH3jnMtyo1dxJM_ZbXZado-j_VEUloMIfxeFHDjPtS1MnjdLzo1utfoHz6mzkF26HCkDrMs8yF4NmG81CKlVy0IU9nmCuTZDgq4h6H8" width='630' height ='630'>
   <br />
-  
+
 
   - ''글쓰기'' 버튼을 클릭하면 아래와 같은 새 글 작성 페이지가 보여지며, 추가하고 싶은 내용을 작성한 후 완료 버튼을 누르면 게시글이 등록된다.
 
-  
+
   <br />
   <img src = "https://lh4.googleusercontent.com/eoMhvO8CCPDIAhNMmtv-YO32s7gfgUb4v0wj7s_TGWc6Fcn6Q78Ro6WF1PFxL3vEcaodgFidwKDEoLtVMEJpjvKDDhJlB6OzAJqJR4EdilkPaZCFDWN4vH8vraN_2BPAn1UyYuFs"  width='700' height ='500' >
   <br />
-  
+
   - 글의 세부 내용을 보기위해 글 제목을 클릭하면 다음과 같은 세부 내용을 볼 수 있다.   
-  
+
   <br />
   <img src = "https://lh6.googleusercontent.com/uQWGf_A9TBvjZb8tVQ-o0BrUFOLpYQ9pueELFM2KwZWSQjbr12DbMsJaffP43oW6JlMk1GLZZ0wEAQmHWs8ZxEUmcYLrYRKAEB4kfKMZAn52sDiYmcWjCUuftwpUOobKC5gvJ7Fo"  width='700' height ='550' >
   <br />
@@ -131,7 +131,7 @@
   - 게시글은 조회수, 공감수, 비공감수 등의 정보를 포함한다. 
   - 사용자는 1개의 게시물에 대해 공감 또는 비공감을 한 번만 선택할 수 있다. 
   - 실수로 공감 혹은 비공감을 눌렀을 시, 한 번 더 눌러 취소할 수 있다.
-  
+
   <br />
 
   <img src = "https://lh5.googleusercontent.com/5xtlJnegYdwRW7RMMikzpiafnj0eHAfFeeVIWTkcmwNCxGnp36ccqHtBzQVKGnJDejMclHr40_fnQv1zFvK4HdBSr6AkxkUHrZAFC9mlmKRa4Sx9bMUVEOQMK6wDgmpVTOEhCRHi"  width='700' height ='430' >
@@ -142,7 +142,7 @@
 
   - 게시글 댓글란에 댓글을 작성한 후 등록 버튼을 누르면 댓글 작성이 완료된다.
 
-  
+
   <br />
   <img src = "https://lh6.googleusercontent.com/P6T-Dx_DhzXHdhITUzCV88pEO2CnTFIq5hWYpjWTvb-bqOU9i7EIgBehdoi7bzigYbNamhbtxxrTTSe7LChz2nEaCzxJdoFvTEBnoOPpUVKhk3S53XIQfmXS6-qkh1HXUPePTbRl"  width='700' height ='180' >
   <br />
@@ -150,7 +150,7 @@
   - 댓글의 답글 버튼 클릭 시, 답글 창이 열리며 답글을 작성할 수 있다.
   - 추가하고 싶은 내용을 작성한 후 등록 버튼을 누르면 답글 작성이 가능하다.
 
-  
+
   <br />
   <img src = "https://lh6.googleusercontent.com/ADt8Vx2UGjcMEs1GAPyheFHtchPK-Q8rvtdHKY9_CLscgGLKQpWyXQ9jSHIph6VR0zQyTCTvcqao0LdlibNX_lSslx2MYI3gAzTO2M4zHTQ7mp9c-RT_Mr0ymhlmg18gOg2MYWtj"  width='700'>
   <br />
@@ -165,11 +165,11 @@
 
   
 
-  
+
   <br />
   <img src = "https://lh5.googleusercontent.com/ZEINSR9gAqesqGy2-TJocNGvPqiXqdp_gZdJ6Ac35VHaGNdVBIttXX-7m5aOwNSYRcxxHFTA3P975unIepu-nIwUPeI07CyT7Qd3cy8y33g8g0f-ANQXlhsseqvkOQ5oIPEQiswC"  width='700'  >
   <br />
-  
+
 
   - 사용자는 댓글 및 답글에 공감 / 비공감할 수 있다.
 
@@ -182,7 +182,7 @@
 -------
 
 ### 5. FAQ
-    
+
    - 사용자는 FAQ란을 통해 자주 문의를 받는 질문에 대한 답변을 쉽게 확인할 수 있다.
 
   <br />
@@ -203,15 +203,23 @@
 
 
  <br />
- 
+
   #### 세부 프로필
   - 사용자의 현재 보유 포인트를 확인할 수 있다.
 
   <br />
-  <img src = "https://lh6.googleusercontent.com/REwvERph0XzWEl6TNgbZdBxIbRKiLXiz8WOq_sFcNKZgajA8n2pnr8IWIkTKu78_wwIWlaEZumJCn8Y61Ao0iQ3E7wHTo7QMIJs64oc_IiP3Vq8mTO7qwirEM4VJywgA0BovIEV_"  width='700'>
+  <img src = "https://lh4.googleusercontent.com/OxlbRzSabY_3pzsi5x8nGGWJ7gBmig2-tHywBG3s3U079HWiZ61oCQCW4MxHknZytKg0z4vav8VxF482pDyGQAL4LPphY4M9uxxD4ncFq_cju6MGJv4P6aEV3PrRXX-FLFGV6SS0"  width='700'>
 
   <br /><br />
-  [ 오른쪽 상단 아이콘 ]
+
+ [ 왼쪽 상단 아이콘 ]
+
+- 사진을 누르면 사용자가 원하는 사진을 업로드해 프로필 이미지를 변경할 수 있다.
+- 이미지 포맷 형식은 ‘.png, .jpg, .gif’ 를 지원하고 있다. 
+
+<br />
+
+ [ 오른쪽 상단 아이콘 ]
 
   - 시계(반시계방향) 모양의 아이콘을 누르면 사용자의 투자 정보를 실시간으로 동기화한다.
 
@@ -224,7 +232,7 @@
 
   - 로그아웃 모양의 아이콘을 누르면 자동으로 로그아웃 된다.
 
-  
+
   <br />
   [ 좌측 하단 아이콘 ]
 
@@ -251,6 +259,7 @@
       <img src = "https://lh6.googleusercontent.com/CaY2V_Ln6pZDvZLg3JSt7o__YwdN2xBw2fjvarrpzUt0wCHH65nIwHXC_qmUr-E_jLTjgXZaR_dsGB4EVP_GjFA8viQeg2BBIlmVclp-ewZPduj4P_ei0e1mDMZwYmQvkaaEpTnS"  width='700' >
 
       
+
   <br />
 
   2. 연동할 회사 명과 해당 회사 계정 이메일 또는 아이디, 비밀번호를 입력한 후, 회원 인증 버튼을 누른다.
@@ -260,6 +269,7 @@
       ![img](https://lh3.googleusercontent.com/KDEv5Y3allnDiNGHhMAB8OYZx9xshJvChDAL_9lkuCyc88FsBC_ns0iioVCowqjbKTc9jTFNo0XHEbCAAeDDzZhhco_-J_VffOU7s7ALWFSzAb4adPG3oW32yeRVFtxV9WeC7UWC)
 
       
+
   <br />
 
   3. 인증을 성공하면, 다음 이미지가 보여지며 등록을 진행할 수 있다.
@@ -269,6 +279,7 @@
       ![img](https://lh5.googleusercontent.com/8NO_mud2lPuU0rMSWjFWlC6vst0wzcADjYJzpu_9pmPESmhC7FlGVJk4DAvwk3LrySm0H1dIEIksJFdoAqDjeJUkmlPR5QhrHUOf2Df5I0pUpj_O2FwyE1xXIukoKf4RaQVxwfAV)
 
       
+
   <br />
 
   4. 인증을 실패하면, 다음 이미지가 보여지며 올바른 정보로 회원 인증을 다시 진행해야 한다.
@@ -278,6 +289,7 @@
       ![img](https://lh6.googleusercontent.com/1OYkjHN-fBTjPFrJ8duIdxJkiWvnpofpQ4M67HnbpG92Al6PBZSP6EyimKSaXTCmJzsVUikYOpAyuc_ZgEf4L1EiACroMH5_RMWOnARmitxickwpx451m3NhB_y84qFQuEpCKJI8)
 
       
+
   <br />
 
   #### 계정 수정 및 삭제하기
@@ -289,6 +301,7 @@
     <img src = "https://lh5.googleusercontent.com/KGb93LkjW2i9TBG16JCLe4FJ3s-qG4whRYDNg0Feu3pKnNv1Umw5iw1WF0k2aLrc32BKUv4Isu702W_aa0uN0D8xX7FnOpq04vAR_nUpsrBz15jqVmtt5_r_4_YYSF1THmgk65rI"  width='700'>
     
     
+
   <br />
 
   - 계정 정보를 변경하려는 회사 명을 입력한 후, 조회된 계정의 연필 아이콘을 누르면 수정이 휴지통 아이콘을 누르면 삭제가 가능하다.
@@ -298,6 +311,7 @@
     <img src = "https://lh4.googleusercontent.com/dxGm8x06gX6kfsJ-CSjb8IBq4e1us3Zdl-Lx_Ihx7B4kO2e1kDuZskalbS6CbeOqmskSIFudmIFK9QDGxwEjlaf62DcGkLRKvyS7Bqf5E1jhWmQcgVokXXU_DArtsdKhMug7UQ4J"  width='700'>
 
     
+
   <br />
 
   - 계정 정보 수정하기
@@ -309,23 +323,25 @@
       <img src = "https://lh5.googleusercontent.com/zbiNckdVzLam0GrIy1Ov1z-MRvSHhZysn3s1pYeQmFTK8Z0R95VlmDP0GKCCb4mzD9HEXyOJ8lypjklHoEqoQF5HysaOBZe1sspYMN_pG6_Pj9u1l18nIECmT-CxJysKNKDn4ktE"  width='500' >
 
       
-    <br />
-
-    - 변경하려는 이메일 또는 아이디와 비밀번호를 입력한 후, 회원 인증 버튼을 누른다.
-
-      - 인증을 성공하면, 다음 이미지가 보여지며 등록을 진행할 수 있다.
-
-        
-
-        ![img](https://lh5.googleusercontent.com/8NO_mud2lPuU0rMSWjFWlC6vst0wzcADjYJzpu_9pmPESmhC7FlGVJk4DAvwk3LrySm0H1dIEIksJFdoAqDjeJUkmlPR5QhrHUOf2Df5I0pUpj_O2FwyE1xXIukoKf4RaQVxwfAV)
-
-      - 인증을 실패하면, 다음 이미지가 보여지며 올바른 정보로 회원 인증을 다시 진행해야 한다.
-
-        
-
-        ![img](https://lh6.googleusercontent.com/1OYkjHN-fBTjPFrJ8duIdxJkiWvnpofpQ4M67HnbpG92Al6PBZSP6EyimKSaXTCmJzsVUikYOpAyuc_ZgEf4L1EiACroMH5_RMWOnARmitxickwpx451m3NhB_y84qFQuEpCKJI8)
-
+    
+<br />
+    
+- 변경하려는 이메일 또는 아이디와 비밀번호를 입력한 후, 회원 인증 버튼을 누른다.
+    
+  - 인증을 성공하면, 다음 이미지가 보여지며 등록을 진행할 수 있다.
+    
+    
+    
+    ![img](https://lh5.googleusercontent.com/8NO_mud2lPuU0rMSWjFWlC6vst0wzcADjYJzpu_9pmPESmhC7FlGVJk4DAvwk3LrySm0H1dIEIksJFdoAqDjeJUkmlPR5QhrHUOf2Df5I0pUpj_O2FwyE1xXIukoKf4RaQVxwfAV)
+    
+  - 인증을 실패하면, 다음 이미지가 보여지며 올바른 정보로 회원 인증을 다시 진행해야 한다.
+    
+    
+    
+    ![img](https://lh6.googleusercontent.com/1OYkjHN-fBTjPFrJ8duIdxJkiWvnpofpQ4M67HnbpG92Al6PBZSP6EyimKSaXTCmJzsVUikYOpAyuc_ZgEf4L1EiACroMH5_RMWOnARmitxickwpx451m3NhB_y84qFQuEpCKJI8)
+    
       
+
   <br />
 
   #### 계정 삭제하기
@@ -333,6 +349,7 @@
   - 휴지통 아이콘을 누르면 연동이 삭제된다는 경고창과 함께 삭제된다.
 
       
+
   <br /><br />
 
   #### 연동 회사 투자 정보 조회하기
@@ -344,13 +361,14 @@
     <img src = "https://lh5.googleusercontent.com/HlNBRYGEOAQhGjzTo0Hm5lPwrhH7ZtR_rPGd5tWpKahgerVTJDEDvADY7bP5lscWrQSbXZOvXZfh0_0BNxCdUb-eGTut3g60OsPUMXStHbNJDFZIb2wq4_N1MpUdIUcf5r69UZS4"  width='500'>
 
     
+
 <br /><br />
   #### 포인트 내역
   - 사용자는 출석, 친구 초대, 게시물 및 댓글 작성, 계정 연동 활동을 통해  포인트를 얻을 수 있다. 
   - 사용자는 설정한 조회시작일, 조회종료일에 따라  최신 순으로 포인트 상세 내역을 조회할 수 있다.
 
     <img src = "https://lh4.googleusercontent.com/ppgH2NCEqITKLyW3w9StoQG3HSWhpeAtY2juCaBBiq1FQOOoPVH1ukeE13gGw2nmrDy0OgLd7adLw75BDQ0Zz6Sv5r8hsVUnl6vKTwQdc7oqtVLRPbotS_jL-CIoNtyI_PWI0nN_"  width='700' height='520'>
-  <br />
+    <br />
 
   - 달력 모양 아이콘을 누르면 다음과 같은 창에서 조회일을 수정할 수 있다.
 
@@ -368,7 +386,6 @@
     <img src = "https://lh6.googleusercontent.com/03h_ALiHiibKWL1UhF97geWEhJ-nABqXNjFP6oT2f3C464Kaw5wvyT-FJ4HXZODl1NOYOB7JoBRsOuLU20KNw6Wf5yRkEm6HFlptGPJpxs4tqU680In4T4uUqO3gHXKR6WUyZMs2"  width='700'>
     <br /><br />
     
-
   - 더보기 버튼을 선택하면, 남아있는 조회 데이터 내역을 확인할 수 있다.
 
   - 화살표 ^ 모양 아이콘을 선택하면, 간편하게 맨 위로 이동한다. 
@@ -388,7 +405,6 @@
     <img src = "https://lh4.googleusercontent.com/hCPY8fvsOOGgQpHM1gqOizTM_lK9HqZHyNaGHpZfgz94IyVniYUtCqwQvn_6LhCIKX8SXIyn09ChxL6pkRTUV-coMtUguyrNGqsL3yw8sqyqJT52v-324bicEZODxHtToClG2GQg"  width='700'>
     <br /><br />
     
-
   - 카카오톡 아이콘을 누른 후, 다음과 같은 로그인 창을 통해 로그인한다. 
 
     
@@ -396,6 +412,7 @@
     ![img](https://lh5.googleusercontent.com/eZwkO-ZPB5zJfdAD06j38aCv5zGoPC-ydnPas76-aLw3L8cXFLmuDr2xwjpITkOfsfewKac2Qmcg2r_2aPuCOyfamsfSDml10QXu_PnOuZXvimT9LjKcIpCm244n9fXlu6VqeaZU)
 
     
+
   <br />
 
   - 공유하고 싶은 친구를 선택한 후, 공유하기를 누르면 초대 코드와 함께 공유 메시지가 전송된다.
@@ -405,6 +422,7 @@
     ![img](https://lh4.googleusercontent.com/ykTpJS1B1fcJmASNeUd7lj8nQc49ftf4cYJsPiid47uQjZJ9PbUGxKe2ekfmHSXV_U5Uav_pDdzYD-qSUAbtuLjm0u9uK0lI5_B9gAR8e7CQUK1tmsS3o9He1cxXzR7PAJAdaVXT)
 
     
+
   <br />
 
   - 전송되는 공유 메시지 창은 다음과 같다.
