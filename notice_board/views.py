@@ -14,7 +14,7 @@ from users.serializers import EmptySerializer
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
 from drf_yasg import openapi
-from django.db.models import Q
+from django.db.models import Q, Count
 
 User = get_user_model()
 
@@ -228,7 +228,7 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
             'category_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='특정 카테고리를 가진 post를 보고싶을 경우'),
             'search_type': openapi.Schema(type=openapi.TYPE_STRING, description='검색 타입(제목만 검색, 내용만 검색, 제목+내용 검색)'),
             'search_keyword': openapi.Schema(type=openapi.TYPE_STRING, description='검색 키워드'),
-            
+            'sort': openapi.Schema(type=openapi.TYPE_STRING, description='정렬 방법 디폴드 값은 최신순'),
 
         }))
     @csrf_exempt
@@ -237,6 +237,7 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         """ 전체 글 목룍 가져오기 : category_id 필드가 all인 경우, 특정 카테고리의 전체 글 목록 가져오기 : category_id 필드에 특정 카테고리 작성
             검색어가 있다면 search_type에 검색 타입, search_keyword에 검색 키워드 작성. 검색어가 없다면 search_type, search_keyword를 null로 세팅하여 요청
             search_type에는 title_content, title, content가 존재
+            sort에는 date(최신순), like(인기순), views(조회순), comment(댓글순)가 존재
         """
 
         paginator = PageNumberPagination()
@@ -245,27 +246,29 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
 
         search_type = request.data['search_type']
         search_keyword = request.data['search_keyword']
+        sort = request.data['sort']
 
-        if search_keyword is None and search_type is None:
-            if category_id == 'all':
-                query_set = NoticeBoard.objects.all().order_by('-post_id')
+        if category_id == 'all':
+            if sort =='comment':
+                query_set = NoticeBoard.objects.all().annotate(comment_count=Count('comment__post_id')).order_by('-comment_count')
             else:
-                query_set = NoticeBoard.objects.filter(category_id=category_id).order_by('-post_id')
+                query_set = NoticeBoard.objects.all().order_by("-"+sort)
         else:
-            if category_id == 'all':
-                post_list = NoticeBoard.objects.all().order_by('-post_id')
+            if sort =='comment':
+                query_set = NoticeBoard.objects.filter(category_id=category_id).annotate(comment_count=Count('comment__post_id')).order_by('-comment_count')
             else:
-                post_list = NoticeBoard.objects.filter(category_id=category_id).order_by('-post_id')
+                query_set = NoticeBoard.objects.filter(category_id=category_id).order_by("-"+sort)
 
+        if search_keyword and search_type:
             if search_type == 'title_content':
-                query_set = post_list.filter(
+                query_set = query_set.filter(
                     Q(title__icontains=search_keyword) | Q(content__icontains=search_keyword))
 
             elif search_type == 'title':
-                query_set = post_list.filter(title__icontains=search_keyword)
+                query_set = query_set.filter(title__icontains=search_keyword)
 
             elif search_type == 'content':
-                query_set = post_list.filter(content__icontains=search_keyword)
+                query_set = query_set.filter(content__icontains=search_keyword)
 
         result_page = paginator.paginate_queryset(query_set, request)
         serializer = PostListSerializer(result_page, many=True)
