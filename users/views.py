@@ -243,16 +243,18 @@ class AuthViewSet(viewsets.GenericViewSet):
         return Response(status=status.HTTP_200_OK)
 
     @csrf_exempt
-    @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def get_image(self, request):
         """ 사용자 프로필 사진 가져오기 - 프로필이 없을 경우 기본 이미지로 [token required]"""
         uid = request.user.id
         try:
             with open('./user_profile/'+str(uid)+'_profile.png', 'rb') as f:
                 file_data = f.read()
+
         except IOError:
             with open('./user_profile/main_profile.png', 'rb') as f:
                 file_data = f.read()
+
         response = HttpResponse(file_data, content_type="image/png")
         return response
 

@@ -14,6 +14,7 @@ from users.serializers import EmptySerializer
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
 from drf_yasg import openapi
+from django.db.models import Q
 
 User = get_user_model()
 
@@ -225,27 +226,49 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         properties={
             'page_size': openapi.Schema(type=openapi.TYPE_INTEGER, description='한 페이지에 표시할 글 수'),
             'category_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='특정 카테고리를 가진 post를 보고싶을 경우'),
+            'search_type': openapi.Schema(type=openapi.TYPE_STRING, description='검색 타입(제목만 검색, 내용만 검색, 제목+내용 검색)'),
+            'search_keyword': openapi.Schema(type=openapi.TYPE_STRING, description='검색 키워드'),
+            
 
         }))
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[])
     def post_list(self, request):
-        """ 전체 글 목룍 가져오기 : category_id 필드가 없는 경우, 특정 카테고리의 전체 글 목록 가져오기 : category_id 필드에 특정 카테고리 작성 """
-        try:
-            paginator = PageNumberPagination()
-            paginator.page_size = request.data['page_size']
-            category_id = request.data['category_id']
-            query_set = NoticeBoard.objects.filter(category_id=category_id).order_by('-post_id')
-            result_page = paginator.paginate_queryset(query_set, request)
-            serializer = PostListSerializer(result_page, many=True)
+        """ 전체 글 목룍 가져오기 : category_id 필드가 all인 경우, 특정 카테고리의 전체 글 목록 가져오기 : category_id 필드에 특정 카테고리 작성
+            검색어가 있다면 search_type에 검색 타입, search_keyword에 검색 키워드 작성. 검색어가 없다면 search_type, search_keyword를 null로 세팅하여 요청
+            search_type에는 title_content, title, content가 존재
+        """
 
-        except:
-            paginator = PageNumberPagination()
-            paginator.page_size = request.data['page_size']
-            query_set = NoticeBoard.objects.all().order_by('-post_id')
-            result_page = paginator.paginate_queryset(query_set, request)
+        paginator = PageNumberPagination()
+        paginator.page_size = request.data['page_size']
+        category_id = request.data['category_id']
 
-            serializer = PostListSerializer(result_page, many=True)
+        search_type = request.data['search_type']
+        search_keyword = request.data['search_keyword']
+
+        if search_keyword is None and search_type is None:
+            if category_id == 'all':
+                query_set = NoticeBoard.objects.all().order_by('-post_id')
+            else:
+                query_set = NoticeBoard.objects.filter(category_id=category_id).order_by('-post_id')
+        else:
+            if category_id == 'all':
+                post_list = NoticeBoard.objects.all().order_by('-post_id')
+            else:
+                post_list = NoticeBoard.objects.filter(category_id=category_id).order_by('-post_id')
+
+            if search_type == 'title_content':
+                query_set = post_list.filter(
+                    Q(title__icontains=search_keyword) | Q(content__icontains=search_keyword))
+
+            elif search_type == 'title':
+                query_set = post_list.filter(title__icontains=search_keyword)
+
+            elif search_type == 'content':
+                query_set = post_list.filter(content__icontains=search_keyword)
+
+        result_page = paginator.paginate_queryset(query_set, request)
+        serializer = PostListSerializer(result_page, many=True)
 
         return paginator.get_paginated_response(serializer.data)
         return Response(status=status.HTTP_200_OK)
