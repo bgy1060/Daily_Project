@@ -1,20 +1,20 @@
 # Create your views here.
-import json
 
-import pandas
-from PIL import Image
+import string
+import random
+
 from django.contrib.auth import get_user_model, logout
 from django.core.exceptions import ImproperlyConfigured
 from django.http import JsonResponse, HttpResponse
+from django.template.loader import render_to_string
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, status, generics
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.pagination import PageNumberPagination
 
-from datetime import datetime
 from notice_board.models import *
 from . import serializers
 from .serializers import CompanyRegisterSerializer, CompanySerializer, UserInfoSerializer, PointSerializer, \
@@ -30,7 +30,7 @@ import uuid
 import codecs
 import AES
 from datetime import datetime, timedelta
-
+from django.core.mail import EmailMessage
 
 User = get_user_model()
 
@@ -248,7 +248,7 @@ class AuthViewSet(viewsets.GenericViewSet):
         """ 사용자 프로필 사진 가져오기 - 프로필이 없을 경우 기본 이미지로 [token required]"""
         uid = request.user.id
         try:
-            with open('./user_profile/'+str(uid)+'_profile.png', 'rb') as f:
+            with open('./user_profile/' + str(uid) + '_profile.png', 'rb') as f:
                 file_data = f.read()
 
         except IOError:
@@ -260,13 +260,13 @@ class AuthViewSet(viewsets.GenericViewSet):
 
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
-    def image_upload(self,  request):
+    def image_upload(self, request):
         """ 사용자 프로필 사진 가져오기 - 프로필이 없을 경우 기본 이미지로 [token required]"""
         uid = request.user.id
         img = request.FILES['filename']
 
         import os
-        with open(os.path.join('./user_profile/', str(uid)+'_profile.png'), mode='wb') as file:
+        with open(os.path.join('./user_profile/', str(uid) + '_profile.png'), mode='wb') as file:
             for chunk in img.chunks():
                 file.write(chunk)
 
@@ -530,7 +530,37 @@ class CodeViewSet(viewsets.GenericViewSet):
         return Response(data=data, status=status.HTTP_201_CREATED)
 
 
+class ForgetPWDViewSet(viewsets.GenericViewSet):
+    permission_classes = [AllowAny, ]
+    serializer_class = serializers.EmptySerializer
+    serializer_classes = {
 
+    }
 
+    @csrf_exempt
+    @action(methods=['GET', ], detail=False, )
+    def email_auth_num(self, request):
+        """ 비밀번호 변경 토큰 생성 -> 토큰 생성 후 User 테이블 forget_pwd_token에 저장 -> 이메일로 토큰 전송"""
+        email = request.data['email']
+        user = User.objects.get(email=email)
 
+        LENGTH = 8
+        string_pool = string.ascii_letters + string.digits
+        auth_num = ""
+        for i in range(LENGTH):
+            auth_num += random.choice(string_pool)
 
+        user.forget_pwd_token = auth_num
+        user.save()
+
+        email_content = render_to_string('verify_email.html', {"password_token": auth_num})
+        email = EmailMessage(
+            'Daily Now 비밀번호 찾기 인증 메일입니다.',
+            email_content,
+            my_settings.EMAIL_HOST_USER,
+            to=[user.email]
+        )
+        email.content_subtype = "html"
+        email.send()
+
+        return Response(status=status.HTTP_201_CREATED)

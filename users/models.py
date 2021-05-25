@@ -7,23 +7,27 @@ from django.contrib.auth.models import AbstractUser
 
 
 class CustomUser(AbstractUser):
-    username = models.CharField(max_length=50, default="")
+    name = models.CharField(max_length=50, default="")
     email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=255, blank=True,
-                                  null=False)
-    last_name = models.CharField(max_length=255, blank=True,
-                                 null=False)
+
+    first_name = None
+    last_name = None
+    is_staff = None
+    is_superuser = None
+    username = None
 
     withdrawal_status = models.BooleanField(default=False)
     withdrawal_date = models.DateTimeField(blank=True, null=True)
 
     code = models.CharField(max_length=16, null=True, blank=True)
 
+    forget_pwd_token = models.CharField(max_length=16, null=True, blank=True, default=None)
+
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['name']
 
     def __str__(self):
-        return f"{self.email} - {self.first_name} {self.last_name}"
+        return f"{self.email} - {self.name}"
 
     class Meta:
         db_table = 'user'
