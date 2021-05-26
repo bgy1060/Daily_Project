@@ -555,7 +555,7 @@ class ForgetPWDViewSet(viewsets.GenericViewSet):
 
         email_content = render_to_string('verify_email.html', {"password_token": auth_num})
         email = EmailMessage(
-            'Daily Now 비밀번호 찾기 인증 메일입니다.',
+            'Daily Now 비밀번호 찾기 인증 메일.',
             email_content,
             my_settings.EMAIL_HOST_USER,
             to=[user.email]
@@ -564,3 +564,16 @@ class ForgetPWDViewSet(viewsets.GenericViewSet):
         email.send()
 
         return Response(status=status.HTTP_201_CREATED)
+
+    @csrf_exempt
+    @action(methods=['GET', ], detail=False, )
+    def is_pwd_token(self, request):
+        """ 토큰값이 유효한 값인지 확인"""
+        token = request.data['token']
+        user = User.objects.filter(forget_pwd_token=token)
+
+        if user.exists():
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
