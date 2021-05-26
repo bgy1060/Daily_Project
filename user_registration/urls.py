@@ -93,7 +93,6 @@ urlpatterns = router.urls + [
             schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('password_reset_confirm///', auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
 
 
 ]

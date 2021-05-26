@@ -26,7 +26,7 @@ class LoginSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'first_name', 'last_name', 'withdrawal_status', 'auth_token')
+        fields = ('id', 'email', 'username', 'withdrawal_status', 'auth_token')
 
     def get_auth_token(self, obj):
         token = Token.objects.get(user=obj)
