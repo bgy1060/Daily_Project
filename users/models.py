@@ -7,14 +7,13 @@ from django.contrib.auth.models import AbstractUser
 
 
 class CustomUser(AbstractUser):
-    name = models.CharField(max_length=50, default="")
+    username =  models.CharField(max_length=50, default="")
     email = models.EmailField(unique=True)
 
     first_name = None
     last_name = None
     is_staff = None
     is_superuser = None
-    username = None
 
     withdrawal_status = models.BooleanField(default=False)
     withdrawal_date = models.DateTimeField(blank=True, null=True)

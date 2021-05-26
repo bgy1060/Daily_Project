@@ -31,6 +31,7 @@ import codecs
 import AES
 from datetime import datetime, timedelta
 from django.core.mail import EmailMessage
+from rest_framework.authtoken.models import Token
 
 User = get_user_model()
 
@@ -370,6 +371,7 @@ class RegisterViewSet(viewsets.GenericViewSet):
     def registered_company(self, request):
         """ 사용자가 등록한 회사 목록 출력 [token required] """
         query_set = request.user.register_set.all()
+
         serializer = CompanyRegisterSerializer(query_set, many=True)
         return JsonResponse(serializer.data, safe=False)
         return Response(status=status.HTTP_200_OK)
@@ -537,12 +539,21 @@ class ForgetPWDViewSet(viewsets.GenericViewSet):
 
     }
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'email': openapi.Schema(type=openapi.TYPE_STRING, description='비밀번호 찾기를 원하는 사용자의 이메일'),
+
+        }))
     @csrf_exempt
-    @action(methods=['GET', ], detail=False, )
+    @action(methods=['POST', ], detail=False, )
     def email_auth_num(self, request):
         """ 비밀번호 변경 토큰 생성 -> 토큰 생성 후 User 테이블 forget_pwd_token에 저장 -> 이메일로 토큰 전송"""
         email = request.data['email']
         user = User.objects.get(email=email)
+
+        if user.withdrawal_status:
+            return Response(data={"탈퇴 회원"},status=status.HTTP_400_BAD_REQUEST)
 
         LENGTH = 8
         string_pool = string.ascii_letters + string.digits
@@ -565,15 +576,36 @@ class ForgetPWDViewSet(viewsets.GenericViewSet):
 
         return Response(status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'token': openapi.Schema(type=openapi.TYPE_STRING, description='사용자가 메일로 받은 임의의 토큰 값'),
+
+        }))
     @csrf_exempt
-    @action(methods=['GET', ], detail=False, )
+    @action(methods=['POST', ], detail=False, )
     def is_pwd_token(self, request):
         """ 토큰값이 유효한 값인지 확인"""
         token = request.data['token']
-        user = User.objects.filter(forget_pwd_token=token)
+        try:
+            user = User.objects.get(forget_pwd_token=token)
+            user_token = Token.objects.get(user_id=user.id)
+            return Response(data=str(user_token), status=status.HTTP_200_OK)
 
-        if user.exists():
-            return Response(status=status.HTTP_200_OK)
-        else:
+        except:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='변경할 비밀번호 입력'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated, ])
+    def password_reset(self, request):
+        """ USER 비민번호 변경 --- 변경할 비밀번호를 입력 후 비밀번호 변경 [token required]"""
+        request.user.set_password(request.data['new_password'])
+        request.user.save()
+        data = {"Password change successful!"}
+        return Response(data=data, status=status.HTTP_200_OK)

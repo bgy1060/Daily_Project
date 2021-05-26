@@ -38,7 +38,7 @@ class AuthUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'first_name', 'last_name', 'auth_token')
+        fields = ('id', 'email', 'username', 'auth_token')
 
     def get_auth_token(self, obj):
         token = Token.objects.create(user=obj)
