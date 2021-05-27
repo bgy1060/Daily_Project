@@ -32,6 +32,7 @@ import AES
 from datetime import datetime, timedelta
 from django.core.mail import EmailMessage
 from rest_framework.authtoken.models import Token
+from django.db.models import Q
 
 User = get_user_model()
 
@@ -366,11 +367,23 @@ class RegisterViewSet(viewsets.GenericViewSet):
 
         return Response(data=message, status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'search_keyword': openapi.Schema(type=openapi.TYPE_STRING, description='검색 키워드'),
+        }))
     @csrf_exempt
-    @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def registered_company(self, request):
-        """ 사용자가 등록한 회사 목록 출력 [token required] """
-        query_set = request.user.register_set.all()
+        """ 사용자가 등록한 회사 목록 출력 [token required]
+            사용자가 검색한 회사 목록을 보고싶다면 search_keyword에 검색 키워드 작성.
+        """
+
+        search_keyword = request.data['search_keyword']
+
+        query_set = request.user.register_set.all().order_by('company_id__company_name')
+        if search_keyword:
+            query_set = query_set.filter(Q(company_id__company_name__icontains=search_keyword))
 
         serializer = CompanyRegisterSerializer(query_set, many=True)
         return JsonResponse(serializer.data, safe=False)
