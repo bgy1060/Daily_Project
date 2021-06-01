@@ -43,7 +43,7 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from v_funding.views import VFundingViewSet
-from django.contrib.auth import views as auth_views
+from admin_page.views import AdminViewSet
 
 
 schema_view = get_schema_view(
@@ -85,6 +85,7 @@ router.register('api/together', TogetherViewSet, basename='together_funding')
 router.register('api/cocktail', CocktailViewSet, basename='cocktail_funding')
 router.register('api/daon', DaonViewSet, basename='daon_funding')
 router.register('api/leadingplus', LeadingPlusViewSet, basename='leadingplus_funding')
+router.register('api/admin', AdminViewSet, basename='admin')
 
 
 urlpatterns = router.urls + [

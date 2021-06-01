@@ -7,13 +7,11 @@ from django.contrib.auth.models import AbstractUser
 
 
 class CustomUser(AbstractUser):
-    username =  models.CharField(max_length=50, default="")
+    username = models.CharField(max_length=50, default="")
     email = models.EmailField(unique=True)
 
     first_name = None
     last_name = None
-    is_staff = None
-    is_superuser = None
 
     withdrawal_status = models.BooleanField(default=False)
     withdrawal_date = models.DateTimeField(blank=True, null=True)
@@ -23,10 +21,10 @@ class CustomUser(AbstractUser):
     forget_pwd_token = models.CharField(max_length=16, null=True, blank=True, default=None)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name']
+    REQUIRED_FIELDS = ['username']
 
     def __str__(self):
-        return f"{self.email} - {self.name}"
+        return f"{self.email} - {self.username}"
 
     class Meta:
         db_table = 'user'

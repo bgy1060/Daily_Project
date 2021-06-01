@@ -234,7 +234,7 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
     @csrf_exempt
     @action(methods=['POST', ], detail=False, permission_classes=[])
     def post_list(self, request):
-        """ 전체 글 목룍 가져오기 : category_id 필드가 all인 경우, 특정 카테고리의 전체 글 목록 가져오기 : category_id 필드에 특정 카테고리 작성
+        """ 전체 글 목룍 가져오기 : category_id 필드가 0인 경우, 특정 카테고리의 전체 글 목록 가져오기 : category_id 필드에 특정 카테고리 작성
             검색어가 있다면 search_type에 검색 타입, search_keyword에 검색 키워드 작성. 검색어가 없다면 search_type, search_keyword를 null로 세팅하여 요청
             search_type에는 title_content, title, content가 존재
             sort에는 date(최신순), like(인기순), views(조회순), comment(댓글순)가 존재
@@ -248,7 +248,7 @@ class NoticeBoardViewSet(viewsets.GenericViewSet):
         search_keyword = request.data['search_keyword']
         sort = request.data['sort']
 
-        if category_id == 'all':
+        if category_id == 0:
             if sort =='comment':
                 query_set = NoticeBoard.objects.all().annotate(comment_count=Count('comment__post_id')).order_by('-comment_count')
             else:

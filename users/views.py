@@ -2,6 +2,7 @@
 
 import string
 import random
+import re
 
 from django.contrib.auth import get_user_model, logout
 from django.core.exceptions import ImproperlyConfigured
@@ -91,6 +92,14 @@ class AuthViewSet(viewsets.GenericViewSet):
     @action(methods=['POST', ], detail=False)
     def register(self, request):
         """ USER 등록 --- 새로운 User 회원가입 : 개인정보 입력 후 가입 가능"""
+        regex1 = re.compile(r'(?=.*[0-9])(?=.*[^\w\s]).*')
+        regex2 = re.compile(r'(?=.*[0-9]).*')
+        regex3 = re.compile(r'(?=.*[^\w\s]).*')
+
+        if regex1.match(request.data['username']) is not None or regex2.match(request.data['username']) is not None or \
+                regex3.match(request.data['username']) is not None:
+            return Response(data={"이름에는 숫자나 특수문자를 포함할 수 없습니다."},status=status.HTTP_400_BAD_REQUEST)
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = create_user_account(**serializer.validated_data)
@@ -618,7 +627,12 @@ class ForgetPWDViewSet(viewsets.GenericViewSet):
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated, ])
     def password_reset(self, request):
         """ USER 비민번호 변경 --- 변경할 비밀번호를 입력 후 비밀번호 변경 [token required]"""
-        request.user.set_password(request.data['new_password'])
+        pwd = request.data['new_password']
+        if len(pwd) < 8:
+            data = {"비밀번호는 8자리 이상!"}
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+
+        request.user.set_password(pwd)
         request.user.save()
         data = {"Password change successful!"}
         return Response(data=data, status=status.HTTP_200_OK)
