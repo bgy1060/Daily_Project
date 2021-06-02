@@ -43,7 +43,7 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from v_funding.views import VFundingViewSet
-from admin_page.views import AdminViewSet
+from admin_page.views import *
 
 
 schema_view = get_schema_view(
@@ -86,7 +86,12 @@ router.register('api/cocktail', CocktailViewSet, basename='cocktail_funding')
 router.register('api/daon', DaonViewSet, basename='daon_funding')
 router.register('api/leadingplus', LeadingPlusViewSet, basename='leadingplus_funding')
 router.register('api/admin', AdminViewSet, basename='admin')
-
+router.register('api/admin/user', UserManagementViewSet, basename='admin_user_management')
+router.register('api/admin/category', CategoryManagementViewSet, basename='admin_category_management')
+router.register('api/admin/faq', FAQManagementViewSet, basename='admin_faq_management')
+router.register('api/admin/point', PointManagementViewSet, basename='admin_point_management')
+router.register('api/admin/company', CompanyManagementViewSet, basename='admin_company_management')
+router.register('api/admin/notice', NoticeboardManagementViewSet, basename='admin_notice_management')
 
 urlpatterns = router.urls + [
     path('admin/', admin.site.urls),

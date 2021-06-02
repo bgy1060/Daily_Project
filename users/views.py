@@ -98,7 +98,7 @@ class AuthViewSet(viewsets.GenericViewSet):
 
         if regex1.match(request.data['username']) is not None or regex2.match(request.data['username']) is not None or \
                 regex3.match(request.data['username']) is not None:
-            return Response(data={"이름에는 숫자나 특수문자를 포함할 수 없습니다."},status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'username': ["이름에는 숫자나 특수문자를 포함할 수 없습니다."]}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -575,7 +575,7 @@ class ForgetPWDViewSet(viewsets.GenericViewSet):
         user = User.objects.get(email=email)
 
         if user.withdrawal_status:
-            return Response(data={"탈퇴 회원"},status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"탈퇴 회원"}, status=status.HTTP_400_BAD_REQUEST)
 
         LENGTH = 8
         string_pool = string.ascii_letters + string.digits
