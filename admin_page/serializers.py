@@ -1,16 +1,15 @@
-
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.models import BaseUserManager
 
 import my_settings
+from admin_page.models import AdminCategory
 from notice_board.models import Point_List, NoticeBoard, Comment
 from users.models import CustomUser, Register
 from company.models import Company
 
 import AES
-
 
 User = get_user_model()
 
@@ -46,3 +45,25 @@ class UserListSerializer(serializers.ModelSerializer):
             return Comment.objects.filter(uid=obj).count()
         except:
             return 0
+
+
+class PointListSerializer(serializers.ModelSerializer):
+    action = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Point_List
+        fields = ('id', 'point', 'total_point', 'date', 'detail_action', 'action', 'email')
+
+    def get_action(self, obj: Point_List):
+        return obj.action_id.action
+
+    def get_email(self, obj: Point_List):
+        return obj.uid.email
+
+
+class CategoryListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AdminCategory
+        fields = ('category_id', 'category_name', 'parent_category_id')

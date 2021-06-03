@@ -8,16 +8,17 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
-
+from django.http import JsonResponse
 import my_settings
-from notice_board.models import Category, FAQ
+from notice_board.models import Category, FAQ, Point_List, Point_action, Company
 from . import serializers
 from rest_framework.pagination import PageNumberPagination
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from datetime import datetime
 
-from .serializers import UserListSerializer
+from .models import AdminCategory
+from .serializers import UserListSerializer, PointListSerializer, CategoryListSerializer
 from django.utils import timezone
 from django.db.models import Q
 
@@ -37,6 +38,18 @@ class AdminViewSet(viewsets.GenericViewSet):
         """ 관리자가 맞는지 확인 [admin token required] : 입력받은 토큰으로 관리자가 맞는지 확인"""
         if request.user.username == 'Admin':
             return Response(data={'Admin 페이지 접속 가능!'}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @csrf_exempt
+    @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def admin_category(self, request):
+        """ 관리자 페이지 카테고리 전송 [admin token required] """
+        if request.user.username == 'Admin':
+            query_set = AdminCategory.objects.all()
+            serializer = CategoryListSerializer(query_set, many=True)
+            return JsonResponse(serializer.data, safe=False)
+            return Response(status=status.HTTP_200_OK)
         else:
             return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -334,13 +347,13 @@ class FAQManagementViewSet(viewsets.GenericViewSet):
             order = request.data['new_order']
 
             faq = FAQ.objects.get(id=faq_id)
-            
+
             faq.order = order
             try:
                 faq.save()
             except:
                 return Response(data={'중복된 순서!'}, status=status.HTTP_400_BAD_REQUEST)
-                
+
             return Response(data={'FAQ 업데이트 완료!'}, status=status.HTTP_200_OK)
         else:
             return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
@@ -353,12 +366,98 @@ class PointManagementViewSet(viewsets.GenericViewSet):
 
     }
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'page_size': openapi.Schema(type=openapi.TYPE_INTEGER, description='한 페이지에 표시할 글 수'),
+            'email': openapi.Schema(type=openapi.TYPE_STRING, description='포인트 내역을 보고싶은 사용자의 이메일 주소'),
+
+        }))
     @csrf_exempt
-    @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
-    def is_admin(self, request):
-        """ 관리자가 맞는지 확인 [token required] : 입력받은 토큰으로 관리자가 맞는지 확인"""
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def point_list(self, request):
+        """ 전체 회원 포인트 리스트 검색 및 보기 [admin token required] :
+            email을 입력하여 특정 회원의 포인트 내역 조회 가능
+            검색 기능을 사용하지 않은 경우 email 필드를 null로 세팅
+        """
+
         if request.user.username == 'Admin':
-            return Response(data={'Admin 페이지 접속 가능!'}, status=status.HTTP_200_OK)
+
+            paginator = PageNumberPagination()
+            paginator.page_size = request.data['page_size']
+            email = request.data['email']
+
+            if email:
+                uid = User.objects.get(email=email).id
+                query_set = Point_List.objects.filter(uid=uid).order_by('-id')
+            else:
+                query_set = Point_List.objects.all().order_by('-id')
+
+            result_page = paginator.paginate_queryset(query_set, request)
+            serializer = PointListSerializer(result_page, many=True)
+
+            return paginator.get_paginated_response(serializer.data)
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'all': openapi.Schema(type=openapi.TYPE_INTEGER, description='전체 회원에에 포인트를 지급할지 여부'),
+            'email': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.TYPE_STRING,
+                                    description='포인트를 추가하고 싶은 사용자 이메일 주소'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def add_point(self, request):
+        """ 회원 포인트 추가 [admin token required] :
+            전체 회원에게 포인트를 추가할 경우 all 필드는 1로 email 필드는 null로 세팅
+            특정 회원에게 포인트를 추가할 경우 all 필드는 0으로 email 필드는 포인트를 추가하고 싶은 사용자 이메일 배열로 세팅
+        """
+
+        if request.user.username == 'Admin':
+
+            paginator = PageNumberPagination()
+            paginator.page_size = request.data['page_size']
+            email = request.data['email']
+
+            if email:
+                user = User.objects.filter(Q(email__in=email))
+                for i in range(len(user)):
+                    uid = User.objects.get(email=user[i].email)
+                    point = Point_action.objects.get(action='관리자 수동 지급').point_value
+                    action_id = Point_action.objects.get(action='관리자 수동 지급')
+                    try:
+                        total_point = Point_List.objects.filter(uid=uid).order_by('-id').first().total_point
+                    except:
+                        total_point = 0
+
+                    Point_List.objects.create(point=point,
+                                              total_point=total_point + point,
+                                              date=timezone.now(),
+                                              detail_action='관리자 수동 지급 포인트',
+                                              action_id=action_id,
+                                              uid=uid)
+            else:
+                for i in range(len(User.objects.filter(withdrawal_status=0))):
+                    uid = User.objects.filter(withdrawal_status=0)[i]
+                    point = Point_action.objects.get(action='관리자 수동 지급').point_value
+                    action_id = Point_action.objects.get(action='관리자 수동 지급')
+                    try:
+                        total_point = Point_List.objects.filter(uid=uid).order_by('-id').first().total_point
+                    except:
+                        total_point = 0
+
+                    Point_List.objects.create(point=point,
+                                              total_point=total_point + point,
+                                              date=timezone.now(),
+                                              detail_action='관리자 수동 지급 포인트',
+                                              action_id=action_id,
+                                              uid=uid)
+
+            return Response(data={'포인트 지급 완료!'}, status=status.HTTP_200_OK)
         else:
             return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -370,12 +469,46 @@ class CompanyManagementViewSet(viewsets.GenericViewSet):
 
     }
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'company_name': openapi.Schema(type=openapi.TYPE_STRING, description='추가할 회사 이름'),
+            'homepage_url': openapi.Schema(type=openapi.TYPE_STRING, description='추가할 회사 홈페이지 주소'),
+            'nickname': openapi.Schema(type=openapi.TYPE_STRING, description='추가할 회사 닉네임'),
+
+        }))
     @csrf_exempt
-    @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
-    def is_admin(self, request):
-        """ 관리자가 맞는지 확인 [token required] : 입력받은 토큰으로 관리자가 맞는지 확인"""
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def add_company(self, request):
+        """ p2p 회사 추가 [admin token required]"""
         if request.user.username == 'Admin':
-            return Response(data={'Admin 페이지 접속 가능!'}, status=status.HTTP_200_OK)
+            company_name = request.data['company_name']
+            homepage_url = request.data['homepage_url']
+            nickname = request.data['nickname']
+            if len(Company.objects.filter(Q(company_name__icontains=company_name))) != 0:
+                return Response(data={'중복된 회사 존재!'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                Company.objects.create(company_name=company_name, homepage_url=homepage_url, nickname=nickname)
+            return Response(data={'회사 추가 완료!'}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'company_id': openapi.Schema(type=openapi.TYPE_STRING, description='삭제를 원하는 회사 아이디'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def company_delete(self, request):
+        """ 회사 삭제 [admin token required]
+        """
+        company_id = request.data['company_id']
+        if request.user.username == 'Admin':
+            company = Company.objects.get(id=company_id)
+            company.delete()
+            return Response(data={'삭제 완료'}, status=status.HTTP_200_OK)
         else:
             return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
 
