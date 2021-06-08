@@ -62,8 +62,19 @@ class PointListSerializer(serializers.ModelSerializer):
         return obj.uid.email
 
 
+class ChildCategoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdminCategory
+        fields = ('category_id', 'category_name', 'url')
+
+
 class CategoryListSerializer(serializers.ModelSerializer):
+    child_category = serializers.SerializerMethodField()
 
     class Meta:
         model = AdminCategory
-        fields = ('category_id', 'category_name', 'parent_category_id')
+        fields = ('category_id', 'category_name', 'child_category')
+
+    def get_child_category(self, obj):
+        category = AdminCategory.objects.filter(parent_category_id=obj.category_id)
+        return ChildCategoryListSerializer(category, many=True).data

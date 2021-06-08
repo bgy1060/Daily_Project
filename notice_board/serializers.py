@@ -92,7 +92,7 @@ class CommentListSerializer(serializers.ModelSerializer):
 class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('category_id', 'category_name')
+        fields = ('category_id', 'category_name','flag')
 
 
 class FAQListSerializer(serializers.ModelSerializer):

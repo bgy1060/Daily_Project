@@ -5,5 +5,5 @@ from admin_page.models import *
 
 @admin.register(AdminCategory)
 class AdminCategoryAdmin(admin.ModelAdmin):
-    list_display = ['category_id', 'category_name', 'parent_category']
+    list_display = ['category_id', 'category_name', 'parent_category','url']
     list_display_links = ['category_id', 'category_name']

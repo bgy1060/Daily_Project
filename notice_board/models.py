@@ -8,6 +8,7 @@ from company.models import *
 class Category(models.Model):
     category_id = models.IntegerField(primary_key=True)
     category_name = models.CharField(max_length=50)
+    flag = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'category'

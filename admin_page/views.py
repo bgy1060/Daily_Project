@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import my_settings
-from notice_board.models import Category, FAQ, Point_List, Point_action, Company
+from notice_board.models import Category, FAQ, Point_List, Point_action, Company, NoticeBoard
 from . import serializers
 from rest_framework.pagination import PageNumberPagination
 from drf_yasg import openapi
@@ -20,7 +20,7 @@ from datetime import datetime
 from .models import AdminCategory
 from .serializers import UserListSerializer, PointListSerializer, CategoryListSerializer
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Count
 
 User = get_user_model()
 
@@ -46,7 +46,7 @@ class AdminViewSet(viewsets.GenericViewSet):
     def admin_category(self, request):
         """ 관리자 페이지 카테고리 전송 [admin token required] """
         if request.user.username == 'Admin':
-            query_set = AdminCategory.objects.all()
+            query_set = AdminCategory.objects.filter(parent_category_id=None)
             serializer = CategoryListSerializer(query_set, many=True)
             return JsonResponse(serializer.data, safe=False)
             return Response(status=status.HTTP_200_OK)
@@ -120,7 +120,7 @@ class UserManagementViewSet(viewsets.GenericViewSet):
             withdrawal_user = User.objects.filter(withdrawal_status=1).count()
 
             return Response(
-                data={'total_user': [total_user], 'new_user': [new_user], 'withdrawal_user': [withdrawal_user]},
+                data={'total_user': total_user, 'new_user': new_user, 'withdrawal_user': withdrawal_user},
                 status=status.HTTP_200_OK)
         else:
             return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
@@ -128,7 +128,8 @@ class UserManagementViewSet(viewsets.GenericViewSet):
     @swagger_auto_schema(request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'email': openapi.Schema(type=openapi.TYPE_STRING, description='삭제를 원하는 유저 이메일'),
+            'email': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.TYPE_STRING,
+                                    description='삭제를 원하는 사용자 이메일 주소 배열'),
 
         }))
     @csrf_exempt
@@ -138,7 +139,7 @@ class UserManagementViewSet(viewsets.GenericViewSet):
         """
         email = request.data['email']
         if request.user.username == 'Admin':
-            user = User.objects.get(email=email)
+            user = User.objects.filter(Q(email__in=email))
             user.delete()
             return Response(data={'삭제 완료'}, status=status.HTTP_200_OK)
         else:
@@ -267,6 +268,31 @@ class CategoryManagementViewSet(viewsets.GenericViewSet):
         else:
             return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'category_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='변경할 카테고리 id'),
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def update_category_flag(self, request):
+        """ 게시판 카테고리 flag 업데이트 [admin token required]"""
+        if request.user.username == 'Admin':
+            category_id = request.data['category_id']
+
+            category = Category.objects.get(category_id=category_id)
+
+            if category.flag is True:
+                category.flag = False
+                category.save()
+            else:
+                category.flag = True
+                category.save()
+
+            return Response(data={'flag 업데이트 완료!'}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class FAQManagementViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny, ]
@@ -294,6 +320,26 @@ class FAQManagementViewSet(viewsets.GenericViewSet):
             FAQ.objects.create(question=question, answer=answer, view=0, order=order + 1)
 
             return Response(data={'FAQ 추가 완료!'}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'faq_id': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.TYPE_INTEGER,
+                                    description='삭제를 원하는 FAQ id 배열'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def delete_faq(self, request):
+        """ FAQ 삭제 [admin token required] : 특정 FAQ 삭제
+        """
+        faq = request.data['faq_id']
+        if request.user.username == 'Admin':
+            faq = FAQ.objects.filter(Q(id__in=faq))
+            faq.delete()
+            return Response(data={'삭제 완료'}, status=status.HTTP_200_OK)
         else:
             return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -422,8 +468,9 @@ class PointManagementViewSet(viewsets.GenericViewSet):
             paginator = PageNumberPagination()
             paginator.page_size = request.data['page_size']
             email = request.data['email']
+            is_all = request.data['all']
 
-            if email:
+            if email and is_all == 1:
                 user = User.objects.filter(Q(email__in=email))
                 for i in range(len(user)):
                     uid = User.objects.get(email=user[i].email)
@@ -458,6 +505,153 @@ class PointManagementViewSet(viewsets.GenericViewSet):
                                               uid=uid)
 
             return Response(data={'포인트 지급 완료!'}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'all': openapi.Schema(type=openapi.TYPE_INTEGER, description='전체 회원의 포인트를 차감할지 여부'),
+            'email': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.TYPE_STRING,
+                                    description='포인트를 차감하고 싶은 사용자 이메일 주소'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def lose_point(self, request):
+        """ 회원 포인트 차감 [admin token required] :
+            전체 회원의 포인트를 차감할 경우 all 필드는 1로 email 필드는 null로 세팅
+            특정 회원의 포인트를 차감할 경우 all 필드는 0으로 email 필드는 포인트를 추가하고 싶은 사용자 이메일 배열로 세팅
+        """
+
+        if request.user.username == 'Admin':
+
+            paginator = PageNumberPagination()
+            paginator.page_size = request.data['page_size']
+            email = request.data['email']
+            is_all = request.data['all']
+
+            if email and is_all == 1:
+                user = User.objects.filter(Q(email__in=email))
+                for i in range(len(user)):
+                    uid = User.objects.get(email=user[i].email)
+                    point = Point_action.objects.get(action='시스템 오류').point_value
+                    action_id = Point_action.objects.get(action='시스템 오류')
+                    try:
+                        total_point = Point_List.objects.filter(uid=uid).order_by('-id').first().total_point
+                    except:
+                        total_point = 0
+
+                    Point_List.objects.create(point=point,
+                                              total_point=total_point + point,
+                                              date=timezone.now(),
+                                              detail_action='시스템 오류로 인한 관리자 포인트 차감',
+                                              action_id=action_id,
+                                              uid=uid)
+            else:
+                for i in range(len(User.objects.filter(withdrawal_status=0))):
+                    uid = User.objects.filter(withdrawal_status=0)[i]
+                    point = Point_action.objects.get(action='시스템 오류').point_value
+                    action_id = Point_action.objects.get(action='시스템 오류')
+                    try:
+                        total_point = Point_List.objects.filter(uid=uid).order_by('-id').first().total_point
+                    except:
+                        total_point = 0
+
+                    Point_List.objects.create(point=point,
+                                              total_point=total_point + point,
+                                              date=timezone.now(),
+                                              detail_action='시스템 오류로 인한 관리자 포인트 차감',
+                                              action_id=action_id,
+                                              uid=uid)
+
+            return Response(data={'포인트 차감 완료!'}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'point_action_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='수정할 포인트 action id'),
+            'action': openapi.Schema(type=openapi.TYPE_STRING, description='수정하고 싶은 포인트 지급 action'),
+            'point_value': openapi.Schema(type=openapi.TYPE_INTEGER, description='수정하여 지급할 포인트'),
+            'limit_number_of_day': openapi.Schema(type=openapi.TYPE_INTEGER, description='수정할 하루 포인트 지급 횟수'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def update_point_action(self, request):
+        """ 포인트 지급 요소 업데이트 [admin token required]
+        """
+        if request.user.username == 'Admin':
+
+            id = request.data['point_action_id']
+            action = request.data['action']
+            point_value = request.data['point_value']
+            limit_number_of_day = request.data['limit_number_of_day']
+
+            point_action = Point_action.objects.get(id=id)
+
+            if action:
+                point_action.action = action
+
+            if point_value:
+                point_action.point_value = point_value
+
+            if limit_number_of_day:
+                point_action.limit_number_of_day = limit_number_of_day
+
+            point_action.save()
+
+            return Response(data={'Point action 업데이트 완료!'}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'point_action_id': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.TYPE_INTEGER,
+                                              description='삭제할 포인트 action id 배열'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def delete_point_action(self, request):
+        """ 포인트 지급 요소 삭제 [admin token required]
+        """
+        if request.user.username == 'Admin':
+            id = request.data['point_action_id']
+            
+            Point_action.objects.filter(Q(id__in=id)).delete()
+
+            return Response(data={'Point action 삭제 완료!'}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'action': openapi.Schema(type=openapi.TYPE_STRING, description='추가할 포인트 지급 action'),
+            'point_value': openapi.Schema(type=openapi.TYPE_INTEGER, description='지급할 포인트'),
+            'limit_number_of_day': openapi.Schema(type=openapi.TYPE_INTEGER, description='하루 포인트 지급 횟수'),
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def add_point_action(self, request):
+        """ 포인트 지급 요소 추가 [admin token required]
+        """
+        if request.user.username == 'Admin':
+            action = request.data['action']
+            point_value = request.data['point_value']
+            limit_number_of_day = request.data['limit_number_of_day']
+
+            id = Point_action.objects.exclude(id__gt=98).order_by('-id').first().id
+
+            Point_action.objects.create(id=id + 1, action=action,
+                                        point_value=point_value, limit_number_of_day=limit_number_of_day)
+
+            return Response(data={'Point action 추가 완료!'}, status=status.HTTP_200_OK)
         else:
             return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -496,7 +690,7 @@ class CompanyManagementViewSet(viewsets.GenericViewSet):
     @swagger_auto_schema(request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'company_id': openapi.Schema(type=openapi.TYPE_STRING, description='삭제를 원하는 회사 아이디'),
+            'company_id': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.TYPE_INTEGER, description='삭제를 원하는 회사 아이디 배열'),
 
         }))
     @csrf_exempt
@@ -506,9 +700,44 @@ class CompanyManagementViewSet(viewsets.GenericViewSet):
         """
         company_id = request.data['company_id']
         if request.user.username == 'Admin':
-            company = Company.objects.get(id=company_id)
+            company = Company.objects.filter(Q(id__in=company_id))
             company.delete()
             return Response(data={'삭제 완료'}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'company_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='업데이트를 원하는 회사 아이디'),
+            'company_name': openapi.Schema(type=openapi.TYPE_STRING, description='업데이트를 원하는 회사 이름'),
+            'homepage_url': openapi.Schema(type=openapi.TYPE_STRING, description='업데이트를 원하는 회사 url'),
+            'nickname': openapi.Schema(type=openapi.TYPE_STRING, description='업데이트를 원하는 회사 닉네임'),
+
+
+        }))
+    @csrf_exempt
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
+    def update_company(self, request):
+        """ 회사 정보 업데이트 [admin token required]
+        """
+        company_id = request.data['company_id']
+        company_name = request.data['company_name']
+        homepage_url = request.data['homepage_url']
+        nickname = request.data['nickname']
+        
+        if request.user.username == 'Admin':
+            company = Company.objects.get(id=company_id)
+            
+            if company_name:
+                company.company_name=company_name
+            if homepage_url:
+                company.homepage_url=homepage_url
+            if nickname:
+                company.nickname=nickname
+            
+            company.save()
+            return Response(data={'업데이트 완료'}, status=status.HTTP_200_OK)
         else:
             return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -522,9 +751,17 @@ class NoticeboardManagementViewSet(viewsets.GenericViewSet):
 
     @csrf_exempt
     @action(methods=['GET', ], detail=False, permission_classes=[IsAuthenticated, ])
-    def is_admin(self, request):
-        """ 관리자가 맞는지 확인 [token required] : 입력받은 토큰으로 관리자가 맞는지 확인"""
+    def notice_statics(self, request):
+        """ 게시판 통계 정보 [admin token required] : 전체 게시글 수, 각 카테고리 전체 게시글 수
+        """
+
         if request.user.username == 'Admin':
-            return Response(data={'Admin 페이지 접속 가능!'}, status=status.HTTP_200_OK)
+            total_notice = NoticeBoard.objects.all().count()
+
+            category_notice = NoticeBoard.objects.values('category_id').annotate(Count('category_id'))
+
+            return Response(
+                data={'total_notice': total_notice, 'category_notice': category_notice},
+                status=status.HTTP_200_OK)
         else:
             return Response(data={'Admin 페이지 접속 불가능!'}, status=status.HTTP_400_BAD_REQUEST)
