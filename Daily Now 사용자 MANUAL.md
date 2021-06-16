@@ -1,5 +1,7 @@
 # DAILY NOW 웹 사용자 매뉴얼
 
+<br />
+
 ## **개요**
 
 - 본 문서는 Daily Now의 사용 방법 및 제한 사항을 기술한다.
@@ -35,6 +37,7 @@
 ## 메뉴 구성
 
 ### 1. 초기 화면(DAILY NOW 메인 화면)
+<br />
 
    - 웹 브라우저를 사용하여 웹 페이지에 접속 한다. 현재 호환 가능한 웹 브라우저는 크롬이다.
 
@@ -47,6 +50,8 @@
 -------
 
 ### 2. 회원가입
+
+<br />
 
    - 사용자는 회원가입을 완료한 후 Daily Now 서비스를 이용할 수 있다. 
 
@@ -70,6 +75,8 @@
 
 ### 3. 로그인
 
+<br />
+
    - 사용자는 회원가입을 완료한 후 로그인을 할 수 있다. 
    - 아이디와 비밀번호를 입력하고 로그인 버튼을 눌러 메인 화면으로 이동한다. 
 
@@ -84,30 +91,30 @@
 - 비밀번호 찾기 버튼을 클릭하면 사용자의 이메일로 인증코드를 전송할 수 있다.
 - 전송하기 버튼을 클릭한 후 다음 버튼을 클릭하면 인증코드를 입력할 수 있다.
 
-<br /><img src ="https://lh6.googleusercontent.com/P-UHV2VIZEKWVkWhQGB0lNozTVLsN40__ZvyLCfSNMrRJ6Jl-bKHicnzFm58wvDow-eraZfoCuqM6ovQCCSaYepBdu9Ll9brjMO2-8qLIyGEYUbfUlV9jOVLOxb8pHZJyQh_ciCV" width='670'>
+<br /><img src ="https://lh6.googleusercontent.com/P-UHV2VIZEKWVkWhQGB0lNozTVLsN40__ZvyLCfSNMrRJ6Jl-bKHicnzFm58wvDow-eraZfoCuqM6ovQCCSaYepBdu9Ll9brjMO2-8qLIyGEYUbfUlV9jOVLOxb8pHZJyQh_ciCV" width='670'><br />
 
 
 
 - 만약 사용자가 올바른 이메일을 입력하지 않으면 입력한 아이디를 찾을 수 없다는 안내문이 나타난다.
 
-<br /><img src ="https://lh5.googleusercontent.com/qWEl-0q1XpAVJ6LcN5ozJrZKh2rZBUMwHMVpexBPyvN3TCyWduZyKPnBvQ3hBa4T6BjzYUWTArk8oSBQZ8k7-EB_7MIDm_-4ztneqRRj6I6EKYaFSuJd0UzJHeDFiUXmMKEwxhC4" width='670'>
+<br /><img src ="https://lh5.googleusercontent.com/qWEl-0q1XpAVJ6LcN5ozJrZKh2rZBUMwHMVpexBPyvN3TCyWduZyKPnBvQ3hBa4T6BjzYUWTArk8oSBQZ8k7-EB_7MIDm_-4ztneqRRj6I6EKYaFSuJd0UzJHeDFiUXmMKEwxhC4" width='670'><br />
 
 - 사용자는 로그인을 할 때 사용하는 이메일을 통해 Daily Now 비밀번호 찾기 인증번호 코드를 부여받는다. 
 
-<br /><img src ="https://lh6.googleusercontent.com/sa1U0FYN1XaWvfjQ6TaKvBQt5GxJbR7bcMIo1VrVFioqzOfcy1oV4H-0H56aq9H4J3aYlWHLWFMiuHTanN-g8tuzAdLrNo9YIvNAWRN1C-fKd4LVzpgVOWPYZHoqP6ROOscRxaYg" width='670'>
+<br /><img src ="https://lh6.googleusercontent.com/sa1U0FYN1XaWvfjQ6TaKvBQt5GxJbR7bcMIo1VrVFioqzOfcy1oV4H-0H56aq9H4J3aYlWHLWFMiuHTanN-g8tuzAdLrNo9YIvNAWRN1C-fKd4LVzpgVOWPYZHoqP6ROOscRxaYg" width='670'><br />
 
 - 해당 코드를 Daily Now 홈페이지에 올바르게 입력하고, 인증하기 버튼을 클릭한 후 다음 버튼을 클릭한다.
 
-<br /><img src ="https://lh3.googleusercontent.com/J-yUBon89fSyX24YQObD0ORxlNlfJGmb2UcOc2yEx6S9vCmRly0aRDLPotJvQeSW3dQxaYT33xkmwrhYB_mmqRfP7R73NV2gbD6asQl8vBglsbEmTUUTIIYiZmrhXQEbac9z347t" width='670'>
+<br /><img src ="https://lh3.googleusercontent.com/J-yUBon89fSyX24YQObD0ORxlNlfJGmb2UcOc2yEx6S9vCmRly0aRDLPotJvQeSW3dQxaYT33xkmwrhYB_mmqRfP7R73NV2gbD6asQl8vBglsbEmTUUTIIYiZmrhXQEbac9z347t" width='670'><br />
 
 - 올바르지 않은 인증 코드를 입력하면, 알림 팝업이 등장한다.
 
-<br /><img src ="https://lh5.googleusercontent.com/abCUQDX1_b8-I_Ev5lRlpNuZ8vxXTt39LHjSf5NQ6fKZfHGTgeUA7B4Khbjwy1p5OTtm7Q-Kj38_SaMqcDLQDpgI1M_bNSTTSNZK5ep1_KtUhp_zKd7C5JU2kW8f2bAtnI87lIoU" width='670'>
+<br /><img src ="https://lh5.googleusercontent.com/abCUQDX1_b8-I_Ev5lRlpNuZ8vxXTt39LHjSf5NQ6fKZfHGTgeUA7B4Khbjwy1p5OTtm7Q-Kj38_SaMqcDLQDpgI1M_bNSTTSNZK5ep1_KtUhp_zKd7C5JU2kW8f2bAtnI87lIoU" width='670'><br />
 
 - 사용자 인증이 완료되면, 새로운 비밀번호로 변경할 수 있다.
 - 새로운 비밀번호를 입력하고, 변경하기 버튼을 클릭하면 다시 로그인 해달라는 안내문과 함께 로그인 화면으로 이동한다.
 
-<br /><img src ="https://lh6.googleusercontent.com/m_v3sbAyqrXC1YLiX4vpX-UGet2wviUT0Y657yOrPNrjDb2PB7TVQUPa_G_891qeWubOyLFJ0Or2dtk6TqavUjFn73ADXXyUGoXuDJ9wKcH626hPp_TxlDFnQWvo8UsvwS6S1IGg" width='670'>
+<br /><img src ="https://lh6.googleusercontent.com/m_v3sbAyqrXC1YLiX4vpX-UGet2wviUT0Y657yOrPNrjDb2PB7TVQUPa_G_891qeWubOyLFJ0Or2dtk6TqavUjFn73ADXXyUGoXuDJ9wKcH626hPp_TxlDFnQWvo8UsvwS6S1IGg" width='670'><br />
 
 
 
@@ -116,6 +123,8 @@
 -------
 
 ### 4. 커뮤니티
+
+<br />
 
 사용자는 로그인을 완료한 후 Daily Now 커뮤니티를 이용할 수 있다. 
 
@@ -139,7 +148,7 @@
 - 사용자는 검색하고 싶은 카테고리(전체, 자유토론방, 투자자 후기, 유머)와 검색 범위(제목+내용, 제목, 내용)를 설정한 후 검색어를 입력한다.
 - 돋보기 아이콘을 클릭하면 해당 카테고리와 검색 범위에 해당하는 글이 노출된다. 
 
-<br /><img src ="https://lh6.googleusercontent.com/cQtmPVUdMm_pq2JMaNFjA9ERY4h0T2ChBCjCmie1m4gOxBP_sD5pA2_V40sTS_Z1Qu2psH0gjaIUdt42u_GHOC2O6sswhSarKX3Zvjx_HRfBK4ksACUC0Cwf8IUfQs58hAuzc6pD" width='670'>
+<br /><img src ="https://lh6.googleusercontent.com/cQtmPVUdMm_pq2JMaNFjA9ERY4h0T2ChBCjCmie1m4gOxBP_sD5pA2_V40sTS_Z1Qu2psH0gjaIUdt42u_GHOC2O6sswhSarKX3Zvjx_HRfBK4ksACUC0Cwf8IUfQs58hAuzc6pD" width='670'><br />
 
 
 
@@ -148,7 +157,7 @@
 - 왼쪽 상단의 정렬 방법을 지정하면 원하는 정렬 방법으로 게시글 조회가 가능하다.
 - 최신순, 인기순, 조회순, 댓글순으로 조회할 수 있다.
 
-<br /><img src ="https://lh3.googleusercontent.com/pCZVRDOB6MUuybw5LZmF6-U633WkQ3Lw8ryuHXjwG_HE-r-59NpTvt115fwWJ-3HE1vlvfP1z1Bw6HJwV2OCQzx-Aneo-QpiHxTkNDw2xY3hcSoMXdQRm5umghMUa_VpF_kbsBVo" width='670'>
+<br /><img src ="https://lh3.googleusercontent.com/pCZVRDOB6MUuybw5LZmF6-U633WkQ3Lw8ryuHXjwG_HE-r-59NpTvt115fwWJ-3HE1vlvfP1z1Bw6HJwV2OCQzx-Aneo-QpiHxTkNDw2xY3hcSoMXdQRm5umghMUa_VpF_kbsBVo" width='670'><br />
 
 
 
@@ -164,7 +173,7 @@
   - "내 글 보기" 버튼을 클릭하면 카테고리 별로 내가 쓴 글을 최신 순으로 확인할 수 있다.
   - 게시물을 선택하면 해당 게시글로 이동한다.
 
-<br /><img src="https://lh6.googleusercontent.com/3BRsgTvBrFtfRr5fZbM-2JALnAy7qX1HrxH3jnMtyo1dxJM_ZbXZado-j_VEUloMIfxeFHDjPtS1MnjdLzo1utfoHz6mzkF26HCkDrMs8yF4NmG81CKlVy0IU9nmCuTZDgq4h6H8" width='670'>
+<br /><img src="https://lh6.googleusercontent.com/3BRsgTvBrFtfRr5fZbM-2JALnAy7qX1HrxH3jnMtyo1dxJM_ZbXZado-j_VEUloMIfxeFHDjPtS1MnjdLzo1utfoHz6mzkF26HCkDrMs8yF4NmG81CKlVy0IU9nmCuTZDgq4h6H8" width='670'><br />
 
   - 만약 사용자가 로그인하지 않은 상태에서 “내 글 보기 & 글쓰기” 버튼을 클릭하면 로그인/회원가입 안내 팝업 창이 나타난다.
 
@@ -181,7 +190,7 @@
 
 - 사용자는 게시글을 작성할 때 제목은 2자 이상, 내용은 3자 이상 입력해야 한다.
 
-<br /><img src = "https://lh3.googleusercontent.com/Bzai1RvpDORPIIMeZWnLdE6vyvdGHRMVwcjj9MHfz0P2VEd_sQbDeSpd0BJvWxFW1GzSjY45h9WqFgviilOh5CmH6Xd0RuxDbQG4BxZf3qSu0aFw0c2gehIxXOo8YvyPMdT6tuZF"  width='670'>
+<br /><img src = "https://lh3.googleusercontent.com/Bzai1RvpDORPIIMeZWnLdE6vyvdGHRMVwcjj9MHfz0P2VEd_sQbDeSpd0BJvWxFW1GzSjY45h9WqFgviilOh5CmH6Xd0RuxDbQG4BxZf3qSu0aFw0c2gehIxXOo8YvyPMdT6tuZF"  width='670'><br />
 
   - 글의 세부 내용을 보기위해 글 제목을 클릭하면 다음과 같은 세부 내용을 볼 수 있다.   
 
@@ -209,7 +218,7 @@
 
 - 댓글과 답글은 3자 이상 입력해야 한다.
 
-<br /><img src = "https://lh3.googleusercontent.com/3YxUkzCAgWrrU9ZtNcvnGQ2-kye2i3yptsIUI6O5bKb3pdN8SROluWCM4LzO913AGqcCf0ZquOP2E-hoHbi4aYeTEdbGwTSoZ2tLcJ9El0N93NAv_SDucZuOoZlpD7JrcHhFow-r"  width='670'>
+<br /><img src = "https://lh3.googleusercontent.com/3YxUkzCAgWrrU9ZtNcvnGQ2-kye2i3yptsIUI6O5bKb3pdN8SROluWCM4LzO913AGqcCf0ZquOP2E-hoHbi4aYeTEdbGwTSoZ2tLcJ9El0N93NAv_SDucZuOoZlpD7JrcHhFow-r"  width='670'><br />
 
   - 댓글의 답글 버튼 클릭 시, 답글 창이 열리며 답글을 작성할 수 있다.
   - 추가하고 싶은 내용을 작성한 후 등록 버튼을 누르면 답글 작성이 가능하다.
@@ -242,6 +251,7 @@
 -------
 
 ### 5. FAQ
+<br />
 
    - 사용자는 FAQ란을 통해 자주 문의를 받는 질문에 대한 답변을 쉽게 확인할 수 있다.
 
@@ -289,7 +299,7 @@
 
 - 사용자가 회원 정보 수정을 원할 경우 웹 페이지 상단의 마이페이지 > 내정보수정 페이지에 접속하여 회원 비밀번호를 수정할 수 있다. 
 
-  <img src = "https://lh6.googleusercontent.com/KuCOUw6o14HTnLMVYJ5rtw7JsGWiVU-FqZfrTABJ8eiu-2eMz_Hdb8hTre6w-k9FpAlTJA2phL6YbFuaWRnPVF-52xwJqh8OOrDTc5s6mA59KDz3akEgeUaa9s7B3B7HSryyjxSX"  width='670'>
+  <img src = "https://lh6.googleusercontent.com/KuCOUw6o14HTnLMVYJ5rtw7JsGWiVU-FqZfrTABJ8eiu-2eMz_Hdb8hTre6w-k9FpAlTJA2phL6YbFuaWRnPVF-52xwJqh8OOrDTc5s6mA59KDz3akEgeUaa9s7B3B7HSryyjxSX"  width='670'><br />
 
 
 
@@ -304,6 +314,7 @@
 
 
   #### 나의 투자
+
 
   - 사용자는 연동할 회사의 계정을 추가, 수정, 삭제할 수 있다.
 
@@ -395,7 +406,7 @@
     
     
     
-    ![img](https://lh5.googleusercontent.com/8NO_mud2lPuU0rMSWjFWlC6vst0wzcADjYJzpu_9pmPESmhC7FlGVJk4DAvwk3LrySm0H1dIEIksJFdoAqDjeJUkmlPR5QhrHUOf2Df5I0pUpj_O2FwyE1xXIukoKf4RaQVxwfAV)
+    ![img](https://lh5.googleusercontent.com/8NO_mud2lPuU0rMSWjFWlC6vst0wzcADjYJzpu_9pmPESmhC7FlGVJk4DAvwk3LrySm0H1dIEIksJFdoAqDjeJUkmlPR5QhrHUOf2Df5I0pUpj_O2FwyE1xXIukoKf4RaQVxwfAV)<br />
     
   - 인증을 실패하면, 다음 이미지가 보여지며 올바른 정보로 회원 인증을 다시 진행해야 한다.
     
