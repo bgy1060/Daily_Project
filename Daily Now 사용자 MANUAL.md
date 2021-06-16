@@ -326,7 +326,7 @@
 
   #### 계정 연동하기
 
-    1. 더하기(+) 모양 아이콘 선택 후 계정을 연동할 수 있다.
+   1. 더하기(+) 모양 아이콘 선택 후 계정을 연동할 수 있다.
 
 <br /><img src = "https://lh6.googleusercontent.com/CaY2V_Ln6pZDvZLg3JSt7o__YwdN2xBw2fjvarrpzUt0wCHH65nIwHXC_qmUr-E_jLTjgXZaR_dsGB4EVP_GjFA8viQeg2BBIlmVclp-ewZPduj4P_ei0e1mDMZwYmQvkaaEpTnS"  width='700' >
 
@@ -334,7 +334,7 @@
 
   <br />
 
-    2. 연동할 회사 명과 해당 회사 계정 이메일 또는 아이디, 비밀번호를 입력한 후, 회원 인증 버튼을 누른다.
+   2. 연동할 회사 명과 해당 회사 계정 이메일 또는 아이디, 비밀번호를 입력한 후, 회원 인증 버튼을 누른다.
 
 <br /><img src = "https://lh6.googleusercontent.com/GnXJGS1khJjqIj5aQjJ2OG1gDhGe916K7laOsZL9L3U0xGn-XuG55ZvWuqpVDFN_2tCsAjHwnV5ml_PCIS8dIPYeaXXMOnTJ38Rcuos6T6XAcYSHU3rSmNj4RyUGrqInqdfP7rUA"  width='600' >
 
