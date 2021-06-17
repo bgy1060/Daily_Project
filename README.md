@@ -52,6 +52,6 @@
 ## 4. 결과물
 
 - 사용자 메뉴얼 
-  - https://github.com/bgy1060/Daily_Project/blob/main/Daily%20Now%20%EC%82%AC%EC%9A%A9%EC%9E%90%20MANUAL.md
+  - [메뉴얼](https://github.com/bgy1060/Daily_Project/blob/main/Daily%20Now%20%EC%82%AC%EC%9A%A9%EC%9E%90%20MANUAL.md)
 - 사이트 링크
   - http://49.50.163.188:3000/
