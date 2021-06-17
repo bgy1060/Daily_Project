@@ -16,7 +16,7 @@
 - **Scraping** 
   - request & selenium
   - Kakao OCR API
--  **Encryption**
+- **Encryption**
   - AES 256
 - **Software Distribution**
   - Naver Cloud Platform
